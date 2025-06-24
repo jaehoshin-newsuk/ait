@@ -1,455 +1,465 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2487.7">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Menlo; color: #4689cc; -webkit-text-stroke: #4689cc}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Menlo; color: #8cd3fe; -webkit-text-stroke: #8cd3fe}
-    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Menlo; color: #c27e65; -webkit-text-stroke: #c27e65}
-    p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Menlo; color: #cacaca; -webkit-text-stroke: #cacaca}
-    p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Menlo; color: #a7c598; -webkit-text-stroke: #a7c598}
-    p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Menlo; color: #cacaca; -webkit-text-stroke: #cacaca; min-height: 16.0px}
-    p.p7 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Menlo; color: #71c083; -webkit-text-stroke: #71c083}
-    span.s1 {font-kerning: none; background-color: #171818}
-    span.s2 {font-kerning: none; color: #8cd3fe; background-color: #171818; -webkit-text-stroke: 0px #8cd3fe}
-    span.s3 {font-kerning: none; color: #6d6d6d; background-color: #171818; -webkit-text-stroke: 0px #6d6d6d}
-    span.s4 {font-kerning: none; color: #cacaca; background-color: #171818; -webkit-text-stroke: 0px #cacaca}
-    span.s5 {font-kerning: none; color: #c27e65; background-color: #171818; -webkit-text-stroke: 0px #c27e65}
-    span.s6 {font-kerning: none; color: #4689cc; background-color: #171818; -webkit-text-stroke: 0px #4689cc}
-    span.s7 {font-kerning: none; color: #d4d4d4; background-color: #171818; -webkit-text-stroke: 0px #d4d4d4}
-    span.s8 {font-kerning: none; color: #71c083; background-color: #171818; -webkit-text-stroke: 0px #71c083}
-    span.s9 {font-kerning: none; color: #a7c598; background-color: #171818; -webkit-text-stroke: 0px #a7c598}
-    span.s10 {font-kerning: none}
-    span.s11 {font-kerning: none; color: #b76ff7; background-color: #171818; -webkit-text-stroke: 0px #b76ff7}
-    span.s12 {font-kerning: none; color: #f67c30; background-color: #171818; -webkit-text-stroke: 0px #f67c30}
-    span.s13 {font-kerning: none; color: #36c0a0; background-color: #171818; -webkit-text-stroke: 0px #36c0a0}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Migration - Spec vs Clickstream Analysis | Learn & Lunch Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 450px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .flow-box {
+            border: 2px solid #073B4C;
+            background-color: #ffffff;
+            color: #073B4C;
+            transition: all 0.3s ease;
+        }
+        .flow-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #118AB2;
+        }
+        .flow-arrow {
+            color: #118AB2;
+            font-size: 2rem;
+            line-height: 1;
+        }
+        .kpi-card {
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        .kpi-card:hover {
+             transform: scale(1.03);
+        }
+        .table-cell-highlight {
+            background-color: #FFD166;
+            color: #58410c;
+        }
+        .code-block {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+        .code-block .keyword { color: #63b3ed; }
+        .code-block .function { color: #faf089; }
+        .code-block .comment { color: #90cdf4; }
+        .code-block .string { color: #9ae6b4; }
+    </style>
 </head>
-<body>
-<p class="p1"><span class="s1">&lt;!DOCTYPE</span><span class="s2"> html</span><span class="s1">&gt;</span></p>
-<p class="p1"><span class="s3">&lt;</span><span class="s1">html</span><span class="s4"> </span><span class="s2">lang</span><span class="s3">=</span><span class="s5">"en"</span><span class="s3">&gt;</span></p>
-<p class="p1"><span class="s3">&lt;</span><span class="s1">head</span><span class="s3">&gt;</span></p>
-<p class="p2"><span class="s4"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;</span><span class="s6">meta</span><span class="s4"> </span><span class="s1">charset</span><span class="s3">=</span><span class="s5">"UTF-8"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;</span><span class="s6">meta</span><span class="s4"> </span><span class="s2">name</span><span class="s3">=</span><span class="s1">"viewport"</span><span class="s4"> </span><span class="s2">content</span><span class="s3">=</span><span class="s1">"width=device-width, initial-scale=1.0"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;</span><span class="s6">title</span><span class="s3">&gt;</span><span class="s1">Data Quality Audit Infographic | Learn &amp; Lunch Edition</span><span class="s3">&lt;/</span><span class="s6">title</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;</span><span class="s6">script</span><span class="s4"> </span><span class="s2">src</span><span class="s3">=</span><span class="s1">"https://cdn.tailwindcss.com"</span><span class="s3">&gt;&lt;/</span><span class="s6">script</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;</span><span class="s6">script</span><span class="s4"> </span><span class="s2">src</span><span class="s3">=</span><span class="s1">"https://cdn.jsdelivr.net/npm/chart.js"</span><span class="s3">&gt;&lt;/</span><span class="s6">script</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;</span><span class="s6">link</span><span class="s4"> </span><span class="s2">rel</span><span class="s3">=</span><span class="s1">"preconnect"</span><span class="s4"> </span><span class="s2">href</span><span class="s3">=</span><span class="s1">"https://fonts.googleapis.com"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;</span><span class="s6">link</span><span class="s4"> </span><span class="s2">rel</span><span class="s3">=</span><span class="s1">"preconnect"</span><span class="s4"> </span><span class="s2">href</span><span class="s3">=</span><span class="s1">"https://fonts.gstatic.com"</span><span class="s4"> </span><span class="s2">crossorigin</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;</span><span class="s6">link</span><span class="s4"> </span><span class="s2">href</span><span class="s3">=</span><span class="s1">"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap"</span><span class="s4"> </span><span class="s2">rel</span><span class="s3">=</span><span class="s1">"stylesheet"</span><span class="s3">&gt;</span></p>
-<p class="p1"><span class="s4"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;</span><span class="s1">style</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s6">body</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">font-family:</span><span class="s1"> </span><span class="s8">'Inter'</span><span class="s7">,</span><span class="s1"> </span><span class="s5">sans-serif</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s7">}</span></p>
-<p class="p1"><span class="s4"><span class="Apple-converted-space">        </span></span><span class="s1">.chart-container</span><span class="s4"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">position:</span><span class="s1"> </span><span class="s5">relative</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">width:</span><span class="s1"> </span><span class="s9">100%</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">max-width:</span><span class="s1"> </span><span class="s9">800px</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">margin-left:</span><span class="s1"> </span><span class="s5">auto</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">margin-right:</span><span class="s1"> </span><span class="s5">auto</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">height:</span><span class="s1"> </span><span class="s9">350px</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">max-height:</span><span class="s1"> </span><span class="s9">450px</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span>@</span><span class="s6">media</span><span class="s1"> (</span><span class="s6">min-width:</span><span class="s1"> 768</span><span class="s6">px</span><span class="s1">) </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>.chart-container {</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s2">height:</span><span class="s1"> </span><span class="s9">400px</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s6">.flow-box</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">border:</span><span class="s1"> </span><span class="s9">2px</span><span class="s1"> </span><span class="s5">solid</span><span class="s1"> #073B4C</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">background-color:</span><span class="s1"> #ffffff</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">color:</span><span class="s1"> #073B4C</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">transition:</span><span class="s1"> </span><span class="s5">all</span><span class="s1"> </span><span class="s9">0.3s</span><span class="s1"> </span><span class="s5">ease</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s7">}</span></p>
-<p class="p1"><span class="s4"><span class="Apple-converted-space">        </span></span><span class="s1">.flow-box:hover</span><span class="s4"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">transform:</span><span class="s1"> </span><span class="s5">translateY(</span><span class="s9">-5px</span><span class="s5">)</span><span class="s7">;</span></p>
-<p class="p5"><span class="s4"><span class="Apple-converted-space">            </span></span><span class="s2">box-shadow:</span><span class="s4"> </span><span class="s1">0</span><span class="s4"> </span><span class="s1">10px</span><span class="s4"> </span><span class="s1">15px</span><span class="s4"> </span><span class="s1">-3px</span><span class="s4"> </span><span class="s5">rgba(</span><span class="s1">0</span><span class="s7">,</span><span class="s4"> </span><span class="s1">0</span><span class="s7">,</span><span class="s4"> </span><span class="s1">0</span><span class="s7">,</span><span class="s4"> </span><span class="s1">0.1</span><span class="s5">)</span><span class="s7">,</span><span class="s4"> </span><span class="s1">0</span><span class="s4"> </span><span class="s1">4px</span><span class="s4"> </span><span class="s1">6px</span><span class="s4"> </span><span class="s1">-2px</span><span class="s4"> </span><span class="s5">rgba(</span><span class="s1">0</span><span class="s7">,</span><span class="s4"> </span><span class="s1">0</span><span class="s7">,</span><span class="s4"> </span><span class="s1">0</span><span class="s7">,</span><span class="s4"> </span><span class="s1">0.05</span><span class="s5">)</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">border-color:</span><span class="s1"> #118AB2</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s7">}</span></p>
-<p class="p1"><span class="s4"><span class="Apple-converted-space">        </span></span><span class="s1">.flow-arrow</span><span class="s4"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">color:</span><span class="s1"> #118AB2</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">font-size:</span><span class="s1"> </span><span class="s9">2rem</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">line-height:</span><span class="s1"> </span><span class="s9">1</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s6">.kpi-card</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p2"><span class="s4"><span class="Apple-converted-space">            </span></span><span class="s1">background-color:</span><span class="s4"> </span><span class="s5">white</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">transition:</span><span class="s1"> </span><span class="s5">all</span><span class="s1"> </span><span class="s9">0.3s</span><span class="s1"> </span><span class="s5">ease</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s7">}</span></p>
-<p class="p1"><span class="s4"><span class="Apple-converted-space">        </span></span><span class="s1">.kpi-card:hover</span><span class="s4"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">             </span></span><span class="s2">transform:</span><span class="s1"> </span><span class="s5">scale(</span><span class="s9">1.03</span><span class="s5">)</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s7">}</span></p>
-<p class="p1"><span class="s4"><span class="Apple-converted-space">        </span></span><span class="s1">.table-cell-highlight</span><span class="s4"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">background-color:</span><span class="s1"> #FFD166</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s2">color:</span><span class="s1"> #58410c</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s7">}</span></p>
-<p class="p1"><span class="s4"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;/</span><span class="s1">style</span><span class="s3">&gt;</span></p>
-<p class="p1"><span class="s3">&lt;/</span><span class="s1">head</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s3">&lt;</span><span class="s6">body</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"bg-gray-50 text-gray-800"</span><span class="s3">&gt;</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;</span><span class="s6">main</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"container mx-auto p-4 md:p-8 max-w-7xl"</span><span class="s3">&gt;</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">        </span></span><span class="s3">&lt;</span><span class="s6">header</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"text-center mb-12 md:mb-16"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">h1</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"text-4xl md:text-5xl font-extrabold text-[#073B4C] mb-2"</span><span class="s3">&gt;</span><span class="s4">SQL-Powered Data Quality Audit</span><span class="s3">&lt;/</span><span class="s6">h1</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-lg md:text-xl text-gray-600 max-w-3xl mx-auto"</span><span class="s3">&gt;</span><span class="s1">A Learn &amp; Lunch session on validating BigQuery data against a specification sheet.</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s3">&lt;/</span><span class="s6">header</span><span class="s3">&gt;</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">        </span></span><span class="s3">&lt;</span><span class="s6">section</span><span class="s4"> </span><span class="s2">id</span><span class="s3">=</span><span class="s1">"data-flow"</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"mb-12 md:mb-20"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">h2</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"text-3xl font-bold text-center text-[#073B4C] mb-4"</span><span class="s3">&gt;</span><span class="s4">The Audit Data Flow</span><span class="s3">&lt;/</span><span class="s6">h2</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-center text-gray-600 mb-10 max-w-2xl mx-auto"</span><span class="s3">&gt;</span><span class="s1">This process transforms raw data into an actionable audit report through a series of logical, sequential steps, all orchestrated within a single SQL query.</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4 flex-wrap"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"flow-box p-4 rounded-lg shadow-md text-center w-full md:w-48"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-2xl font-bold"</span><span class="s3">&gt;</span><span class="s1">1. Load Spec</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-sm"</span><span class="s3">&gt;</span><span class="s1">Google Sheet</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"flow-arrow font-bold transform md:-translate-y-1 md:rotate-0 rotate-90"</span><span class="s3">&gt;</span><span class="s4">&amp;rarr;</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"flow-box p-4 rounded-lg shadow-md text-center w-full md:w-48"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-2xl font-bold"</span><span class="s3">&gt;</span><span class="s1">2. Classify</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-sm"</span><span class="s3">&gt;</span><span class="s1">Raw Events</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"flow-arrow font-bold transform md:-translate-y-1 md:rotate-0 rotate-90"</span><span class="s3">&gt;</span><span class="s4">&amp;rarr;</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"flow-box p-4 rounded-lg shadow-md text-center w-full md:w-48"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-2xl font-bold"</span><span class="s3">&gt;</span><span class="s1">3. Unpivot</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-sm"</span><span class="s3">&gt;</span><span class="s1">Data by Spec</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"flow-arrow font-bold transform md:-translate-y-1 md:rotate-0 rotate-90"</span><span class="s3">&gt;</span><span class="s4">&amp;rarr;</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"flow-box p-4 rounded-lg shadow-md text-center w-full md:w-48"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-2xl font-bold"</span><span class="s3">&gt;</span><span class="s1">4. Aggregate</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-sm"</span><span class="s3">&gt;</span><span class="s1">Completeness</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"flow-arrow font-bold transform md:-translate-y-1 md:rotate-0 rotate-90"</span><span class="s3">&gt;</span><span class="s4">&amp;rarr;</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"flow-box p-4 rounded-lg shadow-md text-center w-full md:w-48 bg-[#06D6A0] text-white border-[#06D6A0]"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-2xl font-bold"</span><span class="s3">&gt;</span><span class="s1">5. Audit</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-sm"</span><span class="s3">&gt;</span><span class="s1">Final Report</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s3">&lt;/</span><span class="s6">section</span><span class="s3">&gt;</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">        </span></span><span class="s3">&lt;</span><span class="s6">section</span><span class="s4"> </span><span class="s2">id</span><span class="s3">=</span><span class="s1">"query-breakdown"</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"mb-12 md:mb-20"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">h2</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"text-3xl font-bold text-center text-[#073B4C] mb-10"</span><span class="s3">&gt;</span><span class="s4">Breakdown of the SQL Query</span><span class="s3">&lt;/</span><span class="s6">h2</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"bg-white p-6 rounded-lg shadow-lg border-t-4 border-[#118AB2]"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">h3</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-xl font-bold text-[#073B4C] mb-2"</span><span class="s3">&gt;</span><span class="s1">CTE 1: `unified_spec`</span><span class="s3">&lt;/</span><span class="s6">h3</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-gray-600"</span><span class="s3">&gt;</span><span class="s1">Loads the "source of truth" from a BigQuery table populated by a Google Sheet. This defines every field we expect to see for each interaction type.</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"bg-white p-6 rounded-lg shadow-lg border-t-4 border-[#06D6A0]"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">h3</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-xl font-bold text-[#073B4C] mb-2"</span><span class="s3">&gt;</span><span class="s1">CTE 2: `raw_events_...`</span><span class="s3">&lt;/</span><span class="s6">h3</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-gray-600"</span><span class="s3">&gt;</span><span class="s1">Ingests and classifies raw clickstream data using `CASE WHEN` logic, assigning a business-friendly `interaction_type` to each event.</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"bg-white p-6 rounded-lg shadow-lg border-t-4 border-[#FFD166]"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">h3</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-xl font-bold text-[#073B4C] mb-2"</span><span class="s3">&gt;</span><span class="s1">CTE 3: `raw_data_unpivoted`</span><span class="s3">&lt;/</span><span class="s6">h3</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-gray-600"</span><span class="s3">&gt;</span><span class="s1">Performs a dynamic "unpivot" by joining the spec to the raw data and using a large `CASE` statement to create a normalized `(field_name, field_value)` structure.</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"bg-white p-6 rounded-lg shadow-lg border-t-4 border-[#FF6B6B]"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">h3</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"text-xl font-bold text-[#073B4C] mb-2"</span><span class="s3">&gt;</span><span class="s4">Final SELECT</span><span class="s3">&lt;/</span><span class="s6">h3</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-gray-600"</span><span class="s3">&gt;</span><span class="s1">Joins the spec against aggregated data, using `COALESCE` to clean up NULLs and a final `CASE` statement to assign an `audit_status` to each field.</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s3">&lt;/</span><span class="s6">section</span><span class="s3">&gt;</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">        </span></span><span class="s3">&lt;</span><span class="s6">section</span><span class="s4"> </span><span class="s2">id</span><span class="s3">=</span><span class="s1">"result-table"</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"mb-12 md:mb-20"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">h2</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"text-3xl font-bold text-center text-[#073B4C] mb-4"</span><span class="s3">&gt;</span><span class="s4">Result Table at a Glance</span><span class="s3">&lt;/</span><span class="s6">h2</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-center text-gray-600 mb-10 max-w-3xl mx-auto"</span><span class="s3">&gt;</span><span class="s1">The query produces a clear, actionable table that shows the health of every tracked field for every interaction type, highlighting issues with color and status.</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"bg-white p-4 sm:p-6 rounded-lg shadow-lg overflow-x-auto"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">table</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"w-full text-sm text-left"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">thead</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"bg-gray-100 text-gray-600 uppercase"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s3">&lt;</span><span class="s6">tr</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">th</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">Interaction Type</span><span class="s3">&lt;/</span><span class="s6">th</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">th</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">Field Name</span><span class="s3">&lt;/</span><span class="s6">th</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">th</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">Priority</span><span class="s3">&lt;/</span><span class="s6">th</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">th</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">Completeness %</span><span class="s3">&lt;/</span><span class="s6">th</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">th</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">Audit Status</span><span class="s3">&lt;/</span><span class="s6">th</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s3">&lt;/</span><span class="s6">tr</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;/</span><span class="s6">thead</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">tbody</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s3">&lt;</span><span class="s6">tr</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"border-b"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3 font-medium"</span><span class="s3">&gt;</span><span class="s1">pageview</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">pageName</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">P1</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">100.00</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3 text-green-600 font-bold"</span><span class="s3">&gt;</span><span class="s1">Field OK</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s3">&lt;/</span><span class="s6">tr</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s3">&lt;</span><span class="s6">tr</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"border-b bg-gray-50"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3 font-medium"</span><span class="s3">&gt;</span><span class="s1">polls</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">poll_question</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">P1</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"p-3 table-cell-highlight font-bold"</span><span class="s3">&gt;</span><span class="s4">75.40</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3 text-yellow-600 font-bold"</span><span class="s3">&gt;</span><span class="s1">Low Completeness</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s3">&lt;/</span><span class="s6">tr</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s3">&lt;</span><span class="s6">tr</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"border-b"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3 font-medium"</span><span class="s3">&gt;</span><span class="s1">polls</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">poll_id</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">P1</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                             </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"p-3 table-cell-highlight font-bold"</span><span class="s3">&gt;</span><span class="s4">72.10</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3 text-yellow-600 font-bold"</span><span class="s3">&gt;</span><span class="s1">Low Completeness</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s3">&lt;/</span><span class="s6">tr</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                         </span></span><span class="s3">&lt;</span><span class="s6">tr</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"border-b bg-gray-50"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3 font-medium"</span><span class="s3">&gt;</span><span class="s1">social share</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">share_platform</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">P2</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">99.20</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3 text-green-600 font-bold"</span><span class="s3">&gt;</span><span class="s1">Field OK</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s3">&lt;/</span><span class="s6">tr</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s3">&lt;</span><span class="s6">tr</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"border-b"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3 font-medium"</span><span class="s3">&gt;</span><span class="s1">video events</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">video_title</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">P2</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3"</span><span class="s3">&gt;</span><span class="s1">0.00</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s3">&lt;</span><span class="s6">td</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"p-3 text-red-600 font-bold"</span><span class="s3">&gt;</span><span class="s1">Missing Field</span><span class="s3">&lt;/</span><span class="s6">td</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s3">&lt;/</span><span class="s6">tr</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;/</span><span class="s6">tbody</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">table</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s3">&lt;/</span><span class="s6">section</span><span class="s3">&gt;</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">        </span></span><span class="s3">&lt;</span><span class="s6">section</span><span class="s4"> </span><span class="s2">id</span><span class="s3">=</span><span class="s1">"audit-results-glance"</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"mb-12 md:mb-20"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">h2</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"text-3xl font-bold text-center text-[#073B4C] mb-10"</span><span class="s3">&gt;</span><span class="s4">Audit Results at a Glance</span><span class="s3">&lt;/</span><span class="s6">h2</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 text-center"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"kpi-card p-6 rounded-lg shadow-md border-b-4 border-[#118AB2]"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-lg font-medium text-gray-500"</span><span class="s3">&gt;</span><span class="s1">Total Fields Audited</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"text-5xl font-extrabold text-[#073B4C]"</span><span class="s3">&gt;</span><span class="s4">312</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"kpi-card p-6 rounded-lg shadow-md border-b-4 border-[#FF6B6B]"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-lg font-medium text-gray-500"</span><span class="s3">&gt;</span><span class="s1">Fields with Issues</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"text-5xl font-extrabold text-[#FF6B6B]"</span><span class="s3">&gt;</span><span class="s4">64</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"kpi-card p-6 rounded-lg shadow-md border-b-4 border-[#06D6A0]"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-lg font-medium text-gray-500"</span><span class="s3">&gt;</span><span class="s1">Overall Data Completeness</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"text-5xl font-extrabold text-[#06D6A0]"</span><span class="s3">&gt;</span><span class="s4">92.7%</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"grid grid-cols-1 lg:grid-cols-5 gap-8 items-center"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"lg:col-span-2 bg-white p-6 rounded-lg shadow-lg"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">h3</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"text-xl font-bold text-center text-[#073B4C] mb-4"</span><span class="s3">&gt;</span><span class="s4">Audit Status Breakdown</span><span class="s3">&lt;/</span><span class="s6">h3</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"chart-container"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s3">&lt;</span><span class="s6">canvas</span><span class="s1"> </span><span class="s2">id</span><span class="s3">=</span><span class="s5">"statusDonutChart"</span><span class="s3">&gt;&lt;/</span><span class="s6">canvas</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"lg:col-span-3 bg-white p-6 rounded-lg shadow-lg"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">h3</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-xl font-bold text-center text-[#073B4C] mb-4"</span><span class="s3">&gt;</span><span class="s1">Data Completeness by Interaction Type</span><span class="s3">&lt;/</span><span class="s6">h3</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                     </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"chart-container"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s3">&lt;</span><span class="s6">canvas</span><span class="s1"> </span><span class="s2">id</span><span class="s3">=</span><span class="s5">"completenessBarChart"</span><span class="s3">&gt;&lt;/</span><span class="s6">canvas</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s3">&lt;/</span><span class="s6">section</span><span class="s3">&gt;</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">        </span></span><span class="s3">&lt;</span><span class="s6">section</span><span class="s4"> </span><span class="s2">id</span><span class="s3">=</span><span class="s1">"detailed-completeness"</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"mb-12 md:mb-20"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">h2</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"text-3xl font-bold text-center text-[#073B4C] mb-10"</span><span class="s3">&gt;</span><span class="s4">Detailed Completeness Analysis</span><span class="s3">&lt;/</span><span class="s6">h2</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"grid grid-cols-1 lg:grid-cols-2 gap-8"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"bg-white p-6 rounded-lg shadow-lg"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">h3</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"text-xl font-bold text-center text-[#073B4C] mb-4"</span><span class="s3">&gt;</span><span class="s4">Completeness by Requirement</span><span class="s3">&lt;/</span><span class="s6">h3</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-center text-gray-600 mb-4 text-sm"</span><span class="s3">&gt;</span><span class="s1">Are our critical, required fields more complete than optional ones? This chart confirms that required fields have significantly higher data quality.</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"chart-container"</span><span class="s4"> </span><span class="s2">style</span><span class="s3">=</span><span class="s1">"max-height: 350px;"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                        </span></span><span class="s3">&lt;</span><span class="s6">canvas</span><span class="s4"> </span><span class="s2">id</span><span class="s3">=</span><span class="s1">"completenessByRequiredChart"</span><span class="s3">&gt;&lt;/</span><span class="s6">canvas</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"bg-white p-6 rounded-lg shadow-lg"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">h3</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-xl font-bold text-center text-[#073B4C] mb-4"</span><span class="s3">&gt;</span><span class="s1">Completeness by Priority per Interaction</span><span class="s3">&lt;/</span><span class="s6">h3</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                     </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-center text-gray-600 mb-4 text-sm"</span><span class="s3">&gt;</span><span class="s1">This view shows if high-priority (P1) fields are being populated correctly within key interactions. Low P1 completeness for an interaction is a red flag.</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"chart-container"</span><span class="s4"> </span><span class="s2">style</span><span class="s3">=</span><span class="s1">"max-height: 350px;"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">                        </span></span><span class="s3">&lt;</span><span class="s6">canvas</span><span class="s4"> </span><span class="s2">id</span><span class="s3">=</span><span class="s1">"completenessByPriorityChart"</span><span class="s3">&gt;&lt;/</span><span class="s6">canvas</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s3">&lt;/</span><span class="s6">section</span><span class="s3">&gt;</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">        </span></span><span class="s3">&lt;</span><span class="s6">section</span><span class="s4"> </span><span class="s2">id</span><span class="s3">=</span><span class="s1">"recommendations"</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"bg-white p-8 rounded-lg shadow-lg"</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;</span><span class="s6">h2</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"text-3xl font-bold text-center text-[#073B4C] mb-6"</span><span class="s3">&gt;</span><span class="s4">Key Takeaways &amp; Next Steps</span><span class="s3">&lt;/</span><span class="s6">h2</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">             </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"grid grid-cols-1 md:grid-cols-3 gap-6 text-gray-700"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-center"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-4xl mb-3"</span><span class="s3">&gt;</span><span class="s1">🤖</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">h3</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-xl font-bold mb-2 text-[#118AB2]"</span><span class="s3">&gt;</span><span class="s1">Automate &amp; Schedule</span><span class="s3">&lt;/</span><span class="s6">h3</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s3">&gt;</span><span class="s1">Convert this query into a scheduled run in BigQuery. Continuous, automated monitoring is the best way to catch data quality issues before they impact downstream users.</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-center"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-4xl mb-3"</span><span class="s3">&gt;</span><span class="s1">📊</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">h3</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-xl font-bold mb-2 text-[#118AB2]"</span><span class="s3">&gt;</span><span class="s1">Visualize the Output</span><span class="s3">&lt;/</span><span class="s6">h3</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s3">&gt;</span><span class="s1">Connect the final report table to a BI tool like Looker Studio. A dashboard tracking completeness over time will make trends and regressions immediately visible.</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-center"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">div</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-4xl mb-3"</span><span class="s3">&gt;</span><span class="s1">⚙️</span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">h3</span><span class="s1"> </span><span class="s2">class</span><span class="s3">=</span><span class="s5">"text-xl font-bold mb-2 text-[#118AB2]"</span><span class="s3">&gt;</span><span class="s1">Parameterize Queries</span><span class="s3">&lt;/</span><span class="s6">h3</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s3">&gt;</span><span class="s1">To make the audit query even more flexible, convert hardcoded values like the date into parameters that can be easily changed for ad-hoc analysis or backfills.</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s3">&lt;/</span><span class="s6">div</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s3">&lt;/</span><span class="s6">section</span><span class="s3">&gt;</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;/</span><span class="s6">main</span><span class="s3">&gt;</span></p>
-<p class="p3"><span class="s4"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;</span><span class="s6">footer</span><span class="s4"> </span><span class="s2">class</span><span class="s3">=</span><span class="s1">"text-center p-4 mt-8 text-gray-500 text-sm"</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s3">&lt;</span><span class="s6">p</span><span class="s3">&gt;</span><span class="s1">Data Quality Infographic | Generated June 24, 2025</span><span class="s3">&lt;/</span><span class="s6">p</span><span class="s3">&gt;</span></p>
-<p class="p1"><span class="s4"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;/</span><span class="s1">footer</span><span class="s3">&gt;</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p1"><span class="s4"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;</span><span class="s1">script</span><span class="s3">&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span>document</span><span class="s7">.</span><span class="s1">addEventListener</span><span class="s7">(</span><span class="s8">'DOMContentLoaded'</span><span class="s7">,</span><span class="s1"> </span><span class="s7">()</span><span class="s1"> </span><span class="s7">=&gt;</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s11">const</span><span class="s1"> energeticPlayful </span><span class="s7">=</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span>green</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'#06D6A0'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span>blue</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'#118AB2'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span>yellow</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'#FFD166'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span>red</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'#FF6B6B'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span>darkBlue</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'#073B4C'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s7">};</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s11">const</span><span class="s1"> wrapLabel </span><span class="s7">=</span><span class="s1"> </span><span class="s7">(</span><span class="s1">label</span><span class="s7">,</span><span class="s1"> maxWidth</span><span class="s7">)</span><span class="s1"> </span><span class="s7">=&gt;</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">if</span><span class="s1"> </span><span class="s7">(!</span><span class="s1">label</span><span class="s7">)</span><span class="s1"> </span><span class="s11">return</span><span class="s1"> </span><span class="s7">[</span><span class="s8">''</span><span class="s7">];</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">const</span><span class="s1"> words </span><span class="s7">=</span><span class="s1"> label</span><span class="s7">.</span><span class="s1">split</span><span class="s7">(</span><span class="s8">' '</span><span class="s7">);</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">let</span><span class="s1"> lines </span><span class="s7">=</span><span class="s1"> </span><span class="s7">[];</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">let</span><span class="s1"> currentLine </span><span class="s7">=</span><span class="s1"> words</span><span class="s7">[</span><span class="s12">0</span><span class="s7">]</span><span class="s1"> </span><span class="s7">||</span><span class="s1"> </span><span class="s8">''</span><span class="s7">;</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">for</span><span class="s1"> </span><span class="s7">(</span><span class="s11">let</span><span class="s1"> i </span><span class="s7">=</span><span class="s1"> </span><span class="s12">1</span><span class="s7">;</span><span class="s1"> i </span><span class="s7">&lt;</span><span class="s1"> words</span><span class="s7">.</span><span class="s1">length</span><span class="s7">;</span><span class="s1"> i</span><span class="s7">++)</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s11">if</span><span class="s1"> </span><span class="s7">((</span><span class="s1">currentLine </span><span class="s7">+</span><span class="s1"> </span><span class="s8">' '</span><span class="s1"> </span><span class="s7">+</span><span class="s1"> words</span><span class="s7">[</span><span class="s1">i</span><span class="s7">]).</span><span class="s1">length </span><span class="s7">&gt;</span><span class="s1"> maxWidth</span><span class="s7">)</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>lines</span><span class="s7">.</span><span class="s1">push</span><span class="s7">(</span><span class="s1">currentLine</span><span class="s7">);</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>currentLine </span><span class="s7">=</span><span class="s1"> words</span><span class="s7">[</span><span class="s1">i</span><span class="s7">];</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s7">}</span><span class="s1"> </span><span class="s11">else</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>currentLine </span><span class="s7">+=</span><span class="s1"> </span><span class="s8">' '</span><span class="s1"> </span><span class="s7">+</span><span class="s1"> words</span><span class="s7">[</span><span class="s1">i</span><span class="s7">];</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span>lines</span><span class="s7">.</span><span class="s1">push</span><span class="s7">(</span><span class="s1">currentLine</span><span class="s7">);</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">return</span><span class="s1"> lines</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s7">};</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s11">const</span><span class="s1"> tooltipTitleCallback </span><span class="s7">=</span><span class="s1"> </span><span class="s7">(</span><span class="s1">tooltipItems</span><span class="s7">)</span><span class="s1"> </span><span class="s7">=&gt;</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">const</span><span class="s1"> item </span><span class="s7">=</span><span class="s1"> tooltipItems</span><span class="s7">[</span><span class="s12">0</span><span class="s7">];</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">if</span><span class="s1"> </span><span class="s7">(!</span><span class="s1">item</span><span class="s7">)</span><span class="s1"> </span><span class="s11">return</span><span class="s1"> </span><span class="s8">''</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">let</span><span class="s1"> label </span><span class="s7">=</span><span class="s1"> item</span><span class="s7">.</span><span class="s1">chart</span><span class="s7">.</span><span class="s1">data</span><span class="s7">.</span><span class="s1">labels</span><span class="s7">[</span><span class="s1">item</span><span class="s7">.</span><span class="s1">dataIndex</span><span class="s7">];</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">if</span><span class="s1"> </span><span class="s7">(</span><span class="s13">Array</span><span class="s7">.</span><span class="s1">isArray</span><span class="s7">(</span><span class="s1">label</span><span class="s7">))</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s11">return</span><span class="s1"> label</span><span class="s7">.</span><span class="s1">join</span><span class="s7">(</span><span class="s8">' '</span><span class="s7">);</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s7">}</span><span class="s1"> </span><span class="s11">else</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s11">return</span><span class="s1"> label</span><span class="s7">;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s7">};</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s11">const</span><span class="s1"> baseChartOptions </span><span class="s7">=</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span>responsive</span><span class="s7">:</span><span class="s1"> </span><span class="s11">true</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span>maintainAspectRatio</span><span class="s7">:</span><span class="s1"> </span><span class="s11">false</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span>plugins</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span>legend</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>position</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'bottom'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s7">},</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span>tooltip</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>callbacks</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>title</span><span class="s7">:</span><span class="s1"> tooltipTitleCallback</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s7">};</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s11">const</span><span class="s1"> createStatusDonutChart </span><span class="s7">=</span><span class="s1"> </span><span class="s7">()</span><span class="s1"> </span><span class="s7">=&gt;</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">const</span><span class="s1"> ctx </span><span class="s7">=</span><span class="s1"> document</span><span class="s7">.</span><span class="s1">getElementById</span><span class="s7">(</span><span class="s8">'statusDonutChart'</span><span class="s7">).</span><span class="s1">getContext</span><span class="s7">(</span><span class="s8">'2d'</span><span class="s7">);</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">new</span><span class="s1"> </span><span class="s13">Chart</span><span class="s7">(</span><span class="s1">ctx</span><span class="s7">,</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span>type</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'doughnut'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span>data</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p7"><span class="s4"><span class="Apple-converted-space">                        </span>labels</span><span class="s7">:</span><span class="s4"> </span><span class="s7">[</span><span class="s1">'Field OK'</span><span class="s7">,</span><span class="s4"> </span><span class="s1">'Low Completeness'</span><span class="s7">,</span><span class="s4"> </span><span class="s1">'Missing Field'</span><span class="s7">],</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>datasets</span><span class="s7">:</span><span class="s1"> </span><span class="s7">[{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>label</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'Audit Status'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>data</span><span class="s7">:</span><span class="s1"> </span><span class="s7">[</span><span class="s12">248</span><span class="s7">,</span><span class="s1"> </span><span class="s12">48</span><span class="s7">,</span><span class="s1"> </span><span class="s12">16</span><span class="s7">],</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>backgroundColor</span><span class="s7">:</span><span class="s1"> </span><span class="s7">[</span><span class="s1">energeticPlayful</span><span class="s7">.</span><span class="s1">green</span><span class="s7">,</span><span class="s1"> energeticPlayful</span><span class="s7">.</span><span class="s1">yellow</span><span class="s7">,</span><span class="s1"> energeticPlayful</span><span class="s7">.</span><span class="s1">red</span><span class="s7">],</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>borderColor</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'#ffffff'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>borderWidth</span><span class="s7">:</span><span class="s1"> </span><span class="s12">2</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>hoverOffset</span><span class="s7">:</span><span class="s1"> </span><span class="s12">4</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s7">}]</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s7">},</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span>options</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span><span class="s1"> </span><span class="s7">...</span><span class="s1">baseChartOptions</span><span class="s7">,</span><span class="s1"> cutout</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'60%'</span><span class="s1"> </span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s7">});</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s7">};</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s11">const</span><span class="s1"> createCompletenessBarChart </span><span class="s7">=</span><span class="s1"> </span><span class="s7">()</span><span class="s1"> </span><span class="s7">=&gt;</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">const</span><span class="s1"> ctx </span><span class="s7">=</span><span class="s1"> document</span><span class="s7">.</span><span class="s1">getElementById</span><span class="s7">(</span><span class="s8">'completenessBarChart'</span><span class="s7">).</span><span class="s1">getContext</span><span class="s7">(</span><span class="s8">'2d'</span><span class="s7">);</span></p>
-<p class="p7"><span class="s4"><span class="Apple-converted-space">                </span></span><span class="s11">const</span><span class="s4"> rawLabels </span><span class="s7">=</span><span class="s4"> </span><span class="s7">[</span><span class="s1">'checkout pageview'</span><span class="s7">,</span><span class="s4"> </span><span class="s1">'pageview'</span><span class="s7">,</span><span class="s4"> </span><span class="s1">'navigation'</span><span class="s7">,</span><span class="s4"> </span><span class="s1">'registration'</span><span class="s7">,</span><span class="s4"> </span><span class="s1">'checkout - registration events'</span><span class="s7">,</span><span class="s4"> </span><span class="s1">'social share events'</span><span class="s7">,</span><span class="s4"> </span><span class="s1">'video events'</span><span class="s7">,</span><span class="s4"> </span><span class="s1">'recommended articles'</span><span class="s7">,</span><span class="s4"> </span><span class="s1">'opta widgets'</span><span class="s7">,</span><span class="s4"> </span><span class="s1">'polls'</span><span class="s7">];</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">new</span><span class="s1"> </span><span class="s13">Chart</span><span class="s7">(</span><span class="s1">ctx</span><span class="s7">,</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span>type</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'bar'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span>data</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>labels</span><span class="s7">:</span><span class="s1"> rawLabels</span><span class="s7">.</span><span class="s1">map</span><span class="s7">(</span><span class="s1">label </span><span class="s7">=&gt;</span><span class="s1"> wrapLabel</span><span class="s7">(</span><span class="s1">label</span><span class="s7">,</span><span class="s1"> </span><span class="s12">16</span><span class="s7">)),</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>datasets</span><span class="s7">:</span><span class="s1"> </span><span class="s7">[{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>label</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'Completeness %'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>data</span><span class="s7">:</span><span class="s1"> </span><span class="s7">[</span><span class="s12">99.8</span><span class="s7">,</span><span class="s1"> </span><span class="s12">99.1</span><span class="s7">,</span><span class="s1"> </span><span class="s12">98.5</span><span class="s7">,</span><span class="s1"> </span><span class="s12">95.2</span><span class="s7">,</span><span class="s1"> </span><span class="s12">94.1</span><span class="s7">,</span><span class="s1"> </span><span class="s12">91.3</span><span class="s7">,</span><span class="s1"> </span><span class="s12">89.9</span><span class="s7">,</span><span class="s1"> </span><span class="s12">85.4</span><span class="s7">,</span><span class="s1"> </span><span class="s12">78.1</span><span class="s7">,</span><span class="s1"> </span><span class="s12">65.7</span><span class="s7">],</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>backgroundColor</span><span class="s7">:</span><span class="s1"> energeticPlayful</span><span class="s7">.</span><span class="s1">blue</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>borderColor</span><span class="s7">:</span><span class="s1"> energeticPlayful</span><span class="s7">.</span><span class="s1">darkBlue</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>borderWidth</span><span class="s7">:</span><span class="s1"> </span><span class="s12">1</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>borderRadius</span><span class="s7">:</span><span class="s1"> </span><span class="s12">4</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s7">}]</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s7">},</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span>options</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s7">...</span><span class="s1">baseChartOptions</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>indexAxis</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'y'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>plugins</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span><span class="s1"> </span><span class="s7">...</span><span class="s1">baseChartOptions</span><span class="s7">.</span><span class="s1">plugins</span><span class="s7">,</span><span class="s1"> legend</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span><span class="s1"> display</span><span class="s7">:</span><span class="s1"> </span><span class="s11">false</span><span class="s1"> </span><span class="s7">}</span><span class="s1"> </span><span class="s7">},</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>scales</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>x</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span><span class="s1"> beginAtZero</span><span class="s7">:</span><span class="s1"> </span><span class="s11">true</span><span class="s7">,</span><span class="s1"> max</span><span class="s7">:</span><span class="s1"> </span><span class="s12">100</span><span class="s7">,</span><span class="s1"> ticks</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span><span class="s1"> callback</span><span class="s7">:</span><span class="s1"> </span><span class="s7">(</span><span class="s1">v</span><span class="s7">)</span><span class="s1"> </span><span class="s7">=&gt;</span><span class="s1"> v </span><span class="s7">+</span><span class="s1"> </span><span class="s8">'%'</span><span class="s1"> </span><span class="s7">}</span><span class="s1"> </span><span class="s7">},</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>y</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span><span class="s1"> grid</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span><span class="s1"> display</span><span class="s7">:</span><span class="s1"> </span><span class="s11">false</span><span class="s1"> </span><span class="s7">}</span><span class="s1"> </span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s7">});</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s7">};</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s11">const</span><span class="s1"> createCompletenessByRequiredChart </span><span class="s7">=</span><span class="s1"> </span><span class="s7">()</span><span class="s1"> </span><span class="s7">=&gt;</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">const</span><span class="s1"> ctx </span><span class="s7">=</span><span class="s1"> document</span><span class="s7">.</span><span class="s1">getElementById</span><span class="s7">(</span><span class="s8">'completenessByRequiredChart'</span><span class="s7">).</span><span class="s1">getContext</span><span class="s7">(</span><span class="s8">'2d'</span><span class="s7">);</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">new</span><span class="s1"> </span><span class="s13">Chart</span><span class="s7">(</span><span class="s1">ctx</span><span class="s7">,</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span>type</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'bar'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span>data</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p7"><span class="s4"><span class="Apple-converted-space">                        </span>labels</span><span class="s7">:</span><span class="s4"> </span><span class="s7">[</span><span class="s1">'Required Fields'</span><span class="s7">,</span><span class="s4"> </span><span class="s1">'Optional Fields'</span><span class="s7">],</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>datasets</span><span class="s7">:</span><span class="s1"> </span><span class="s7">[{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>label</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'Average Completeness %'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>data</span><span class="s7">:</span><span class="s1"> </span><span class="s7">[</span><span class="s12">98.2</span><span class="s7">,</span><span class="s1"> </span><span class="s12">87.5</span><span class="s7">],</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>backgroundColor</span><span class="s7">:</span><span class="s1"> </span><span class="s7">[</span><span class="s1">energeticPlayful</span><span class="s7">.</span><span class="s1">green</span><span class="s7">,</span><span class="s1"> energeticPlayful</span><span class="s7">.</span><span class="s1">yellow</span><span class="s7">],</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>borderColor</span><span class="s7">:</span><span class="s1"> </span><span class="s7">[</span><span class="s1">energeticPlayful</span><span class="s7">.</span><span class="s1">darkBlue</span><span class="s7">,</span><span class="s1"> energeticPlayful</span><span class="s7">.</span><span class="s1">darkBlue</span><span class="s7">],</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>borderWidth</span><span class="s7">:</span><span class="s1"> </span><span class="s12">1</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>borderRadius</span><span class="s7">:</span><span class="s1"> </span><span class="s12">4</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s7">}]</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s7">},</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span>options</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s7">...</span><span class="s1">baseChartOptions</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>plugins</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span><span class="s1"> </span><span class="s7">...</span><span class="s1">baseChartOptions</span><span class="s7">.</span><span class="s1">plugins</span><span class="s7">,</span><span class="s1"> legend</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span><span class="s1"> display</span><span class="s7">:</span><span class="s1"> </span><span class="s11">false</span><span class="s1"> </span><span class="s7">}</span><span class="s1"> </span><span class="s7">},</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>scales</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span><span class="s1"> y</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span><span class="s1"> beginAtZero</span><span class="s7">:</span><span class="s1"> </span><span class="s11">true</span><span class="s7">,</span><span class="s1"> max</span><span class="s7">:</span><span class="s1"> </span><span class="s12">100</span><span class="s7">,</span><span class="s1"> ticks</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span><span class="s1"> callback</span><span class="s7">:</span><span class="s1"> </span><span class="s7">(</span><span class="s1">v</span><span class="s7">)</span><span class="s1"> </span><span class="s7">=&gt;</span><span class="s1"> v </span><span class="s7">+</span><span class="s1"> </span><span class="s8">'%'</span><span class="s1"> </span><span class="s7">}</span><span class="s1"> </span><span class="s7">}</span><span class="s1"> </span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s7">});</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s7">};</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s11">const</span><span class="s1"> createCompletenessByPriorityChart </span><span class="s7">=</span><span class="s1"> </span><span class="s7">()</span><span class="s1"> </span><span class="s7">=&gt;</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">const</span><span class="s1"> ctx </span><span class="s7">=</span><span class="s1"> document</span><span class="s7">.</span><span class="s1">getElementById</span><span class="s7">(</span><span class="s8">'completenessByPriorityChart'</span><span class="s7">).</span><span class="s1">getContext</span><span class="s7">(</span><span class="s8">'2d'</span><span class="s7">);</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s11">new</span><span class="s1"> </span><span class="s13">Chart</span><span class="s7">(</span><span class="s1">ctx</span><span class="s7">,</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span>type</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'bar'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span>data</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p7"><span class="s4"><span class="Apple-converted-space">                        </span>labels</span><span class="s7">:</span><span class="s4"> </span><span class="s7">[</span><span class="s1">'Pageview'</span><span class="s7">,</span><span class="s4"> </span><span class="s1">'Navigation'</span><span class="s7">,</span><span class="s4"> </span><span class="s1">'Polls'</span><span class="s7">,</span><span class="s4"> </span><span class="s1">'Video Events'</span><span class="s7">],</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>datasets</span><span class="s7">:</span><span class="s1"> </span><span class="s7">[</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                                </span>label</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'P1 Priority'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                                </span>data</span><span class="s7">:</span><span class="s1"> </span><span class="s7">[</span><span class="s12">99</span><span class="s7">,</span><span class="s1"> </span><span class="s12">98</span><span class="s7">,</span><span class="s1"> </span><span class="s12">75</span><span class="s7">,</span><span class="s1"> </span><span class="s12">92</span><span class="s7">],</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                                </span>backgroundColor</span><span class="s7">:</span><span class="s1"> energeticPlayful</span><span class="s7">.</span><span class="s1">blue</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s7">},</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                                </span>label</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'P2 Priority'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                                </span>data</span><span class="s7">:</span><span class="s1"> </span><span class="s7">[</span><span class="s12">97</span><span class="s7">,</span><span class="s1"> </span><span class="s12">96</span><span class="s7">,</span><span class="s1"> </span><span class="s12">70</span><span class="s7">,</span><span class="s1"> </span><span class="s12">88</span><span class="s7">],</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                                </span>backgroundColor</span><span class="s7">:</span><span class="s1"> energeticPlayful</span><span class="s7">.</span><span class="s1">yellow</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s7">},</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                             </span></span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                                </span>label</span><span class="s7">:</span><span class="s1"> </span><span class="s8">'P3 Priority'</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                                </span>data</span><span class="s7">:</span><span class="s1"> </span><span class="s7">[</span><span class="s12">95</span><span class="s7">,</span><span class="s1"> </span><span class="s12">94</span><span class="s7">,</span><span class="s1"> </span><span class="s12">65</span><span class="s7">,</span><span class="s1"> </span><span class="s12">85</span><span class="s7">],</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                                </span>backgroundColor</span><span class="s7">:</span><span class="s1"> energeticPlayful</span><span class="s7">.</span><span class="s1">green</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span></span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s7">]</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s7">},</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span>options</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s7">...</span><span class="s1">baseChartOptions</span><span class="s7">,</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span>scales</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>x</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span><span class="s1"> stacked</span><span class="s7">:</span><span class="s1"> </span><span class="s11">false</span><span class="s1"> </span><span class="s7">},</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                            </span>y</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span><span class="s1"> stacked</span><span class="s7">:</span><span class="s1"> </span><span class="s11">false</span><span class="s7">,</span><span class="s1"> beginAtZero</span><span class="s7">:</span><span class="s1"> </span><span class="s11">true</span><span class="s7">,</span><span class="s1"> max</span><span class="s7">:</span><span class="s1"> </span><span class="s12">100</span><span class="s7">,</span><span class="s1"> ticks</span><span class="s7">:</span><span class="s1"> </span><span class="s7">{</span><span class="s1"> callback</span><span class="s7">:</span><span class="s1"> </span><span class="s7">(</span><span class="s1">v</span><span class="s7">)</span><span class="s1"> </span><span class="s7">=&gt;</span><span class="s1"> v </span><span class="s7">+</span><span class="s1"> </span><span class="s8">'%'</span><span class="s1"> </span><span class="s7">}</span><span class="s1"> </span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                        </span></span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s7">}</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">                </span></span><span class="s7">});</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span></span><span class="s7">};</span></p>
-<p class="p6"><span class="s10"></span><br></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>createStatusDonutChart</span><span class="s7">();</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>createCompletenessBarChart</span><span class="s7">();</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>createCompletenessByRequiredChart</span><span class="s7">();</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>createCompletenessByPriorityChart</span><span class="s7">();</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">        </span></span><span class="s7">});</span></p>
-<p class="p1"><span class="s4"><span class="Apple-converted-space">    </span></span><span class="s3">&lt;/</span><span class="s1">script</span><span class="s3">&gt;</span></p>
-<p class="p1"><span class="s3">&lt;/</span><span class="s1">body</span><span class="s3">&gt;</span></p>
-<p class="p1"><span class="s3">&lt;/</span><span class="s1">html</span><span class="s3">&gt;</span></p>
-<p class="p6"><span class="s10"></span><br></p>
+<body class="bg-gray-50 text-gray-800">
+
+    <main class="container mx-auto p-4 md:p-8 max-w-7xl">
+
+        <header class="text-center mb-12 md:mb-16">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-[#073B4C] mb-2">SQL-Powered Data Quality Audit</h1>
+            <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">A Learn & Lunch session on validating BigQuery data against a specification sheet.</p>
+        </header>
+
+        <section id="data-flow" class="mb-12 md:mb-20">
+            <h2 class="text-3xl font-bold text-center text-[#073B4C] mb-4">The Audit Data Flow</h2>
+            <p class="text-center text-gray-600 mb-10 max-w-2xl mx-auto">This process transforms raw data into an actionable audit report through a series of logical, sequential steps, all orchestrated within a single SQL query.</p>
+            <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4 flex-wrap">
+                <div class="flow-box p-4 rounded-lg shadow-md text-center w-full md:w-48">
+                    <div class="text-2xl font-bold">1. Load Spec</div>
+                    <div class="text-sm">Google Sheet</div>
+                </div>
+                <div class="flow-arrow font-bold transform md:-translate-y-1 md:rotate-0 rotate-90">&rarr;</div>
+                <div class="flow-box p-4 rounded-lg shadow-md text-center w-full md:w-48">
+                    <div class="text-2xl font-bold">2. Classify</div>
+                    <div class="text-sm">Raw Events</div>
+                </div>
+                <div class="flow-arrow font-bold transform md:-translate-y-1 md:rotate-0 rotate-90">&rarr;</div>
+                <div class="flow-box p-4 rounded-lg shadow-md text-center w-full md:w-48">
+                    <div class="text-2xl font-bold">3. Unpivot</div>
+                    <div class="text-sm">Data by Spec</div>
+                </div>
+                <div class="flow-arrow font-bold transform md:-translate-y-1 md:rotate-0 rotate-90">&rarr;</div>
+                <div class="flow-box p-4 rounded-lg shadow-md text-center w-full md:w-48">
+                    <div class="text-2xl font-bold">4. Aggregate</div>
+                    <div class="text-sm">Completeness</div>
+                </div>
+                <div class="flow-arrow font-bold transform md:-translate-y-1 md:rotate-0 rotate-90">&rarr;</div>
+                <div class="flow-box p-4 rounded-lg shadow-md text-center w-full md:w-48 bg-[#06D6A0] text-white border-[#06D6A0]">
+                    <div class="text-2xl font-bold">5. Audit</div>
+                    <div class="text-sm">Final Report</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="query-breakdown" class="mb-12 md:mb-20">
+            <h2 class="text-3xl font-bold text-center text-[#073B4C] mb-10">Breakdown of the SQL Query</h2>
+            <div class="space-y-8">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-[#073B4C] mb-2">Step 1: Define the Spec with `WITH`</h3>
+                    <p class="text-gray-600 mb-4">We start by defining our Common Table Expressions (CTEs). The first CTE, `unified_spec`, creates a temporary, readable table from our Google Sheet spec, making the logic modular and easy to follow. <span class="font-bold text-[#118AB2]">Skill Focus: Modularity with `WITH`.</span></p>
+                    <pre class="code-block"><span class="keyword">WITH</span> unified_spec <span class="keyword">AS</span> (
+  <span class="keyword">SELECT</span> ... <span class="keyword">FROM</span> `your-project.your_dataset.unified_spec_gt`
+),</pre>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-[#073B4C] mb-2">Step 2: Classify Events with `CASE WHEN`</h3>
+                    <p class="text-gray-600 mb-4">Next, we ingest raw data and apply business logic using a `CASE WHEN` statement. This classifies each event into a meaningful `interaction_type`, which is the key to joining it with our spec. <span class="font-bold text-[#06D6A0]">Skill Focus: Conditional Logic with `CASE WHEN`.</span></p>
+                     <pre class="code-block">raw_events_with_interaction <span class="keyword">AS</span> (
+  <span class="keyword">SELECT</span> *, 
+    <span class="keyword">CASE</span>
+      <span class="keyword">WHEN</span> eventType = 1 <span class="keyword">AND</span> dimension73 <span class="keyword">IS NOT NULL THEN</span> <span class="string">'polls'</span>
+      <span class="keyword">WHEN</span> eventType = 0 <span class="keyword">THEN</span> <span class="string">'pageview'</span>
+      ...
+    <span class="keyword">END AS</span> interaction_type
+  <span class="keyword">FROM</span> `your-project.clickstream.nuk_pixel`
+),</pre>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-[#073B4C] mb-2">Step 3: Unpivot Dynamically</h3>
+                    <p class="text-gray-600 mb-4">This is the core transformation. We use another `CASE WHEN` statement to unpivot our wide raw data table into a long format. It checks the column name from the spec and dynamically pulls the value from the correct column in the raw data. <span class="font-bold text-[#FFD166]">Skill Focus: Advanced `CASE` for Transformation.</span></p>
+                                         <pre class="code-block">raw_data_unpivoted <span class="keyword">AS</span> (
+  <span class="keyword">SELECT</span> raw.interaction_type, spec.field_name,
+    <span class="keyword">CASE</span> spec.bq_av_raw_clickstream
+      <span class="keyword">WHEN</span> <span class="string">'pageUrl'</span> <span class="keyword">THEN</span> raw.pageUrl
+      <span class="keyword">WHEN</span> <span class="string">'dimension1'</span> <span class="keyword">THEN</span> raw.dimension1
+      ...
+    <span class="keyword">END AS</span> field_value
+  <span class="keyword">FROM</span> raw_events_with_interaction <span class="keyword">AS</span> raw ...
+),</pre>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-[#073B4C] mb-2">Step 4: Aggregate and Audit with `COALESCE`</h3>
+                    <p class="text-gray-600 mb-4">Finally, we aggregate the unpivoted data to get counts and completeness percentages. We `LEFT JOIN` this back to the original spec and use `COALESCE` to turn any `NULL` results (for missing fields) into `0` for a clean report. <span class="font-bold text-[#FF6B6B]">Skill Focus: Clean Reporting with `LEFT JOIN` & `COALESCE`.</span></p>
+                    <pre class="code-block"><span class="keyword">SELECT</span>
+  spec.field_name,
+  <span class="function">COALESCE</span>(agg.completeness_percentage, 0) <span class="keyword">AS</span> completeness_percentage,
+  <span class="keyword">CASE</span> 
+    <span class="keyword">WHEN</span> agg.field_name <span class="keyword">IS NULL THEN</span> <span class="string">'Missing Field'</span>
+    ...
+  <span class="keyword">END AS</span> audit_status
+<span class="keyword">FROM</span> unified_spec <span class="keyword">AS</span> spec <span class="keyword">LEFT JOIN</span> pre_aggregated_data <span class="keyword">AS</span> agg ...</pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="result-table" class="mb-12 md:mb-20">
+            <h2 class="text-3xl font-bold text-center text-[#073B4C] mb-4">Result Table at a Glance</h2>
+            <p class="text-center text-gray-600 mb-10 max-w-3xl mx-auto">The query produces a clear, actionable table that shows the health of every tracked field for every interaction type, highlighting issues with color and status.</p>
+            <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-100 text-gray-600 uppercase">
+                        <tr>
+                            <th class="p-3">Interaction Type</th>
+                            <th class="p-3">Field Name</th>
+                            <th class="p-3">Priority</th>
+                            <th class="p-3">Completeness %</th>
+                            <th class="p-3">Audit Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b">
+                            <td class="p-3 font-medium">pageview</td>
+                            <td class="p-3">pageName</td>
+                            <td class="p-3">P1</td>
+                            <td class="p-3">100.00</td>
+                            <td class="p-3 text-green-600 font-bold">Field OK</td>
+                        </tr>
+                        <tr class="border-b bg-gray-50">
+                            <td class="p-3 font-medium">polls</td>
+                            <td class="p-3">poll_question</td>
+                            <td class="p-3">P1</td>
+                            <td class="p-3 table-cell-highlight font-bold">75.40</td>
+                            <td class="p-3 text-yellow-600 font-bold">Low Completeness</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="p-3 font-medium">polls</td>
+                            <td class="p-3">poll_id</td>
+                            <td class="p-3">P1</td>
+                             <td class="p-3 table-cell-highlight font-bold">72.10</td>
+                            <td class="p-3 text-yellow-600 font-bold">Low Completeness</td>
+                        </tr>
+                         <tr class="border-b bg-gray-50">
+                            <td class="p-3 font-medium">social share</td>
+                            <td class="p-3">share_platform</td>
+                            <td class="p-3">P2</td>
+                            <td class="p-3">99.20</td>
+                            <td class="p-3 text-green-600 font-bold">Field OK</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="p-3 font-medium">video events</td>
+                            <td class="p-3">video_title</td>
+                            <td class="p-3">P2</td>
+                            <td class="p-3">0.00</td>
+                            <td class="p-3 text-red-600 font-bold">Missing Field</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="audit-results-glance" class="mb-12 md:mb-20">
+            <h2 class="text-3xl font-bold text-center text-[#073B4C] mb-10">Audit Results at a Glance</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 text-center">
+                <div class="kpi-card p-6 rounded-lg shadow-md border-b-4 border-[#118AB2]">
+                    <p class="text-lg font-medium text-gray-500">Total Fields Audited</p>
+                    <p class="text-5xl font-extrabold text-[#073B4C]">312</p>
+                </div>
+                <div class="kpi-card p-6 rounded-lg shadow-md border-b-4 border-[#FF6B6B]">
+                    <p class="text-lg font-medium text-gray-500">Fields with Issues</p>
+                    <p class="text-5xl font-extrabold text-[#FF6B6B]">64</p>
+                </div>
+                <div class="kpi-card p-6 rounded-lg shadow-md border-b-4 border-[#06D6A0]">
+                    <p class="text-lg font-medium text-gray-500">Overall Data Completeness</p>
+                    <p class="text-5xl font-extrabold text-[#06D6A0]">92.7%</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
+                <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-center text-[#073B4C] mb-4">Audit Status Breakdown</h3>
+                    <div class="chart-container">
+                        <canvas id="statusDonutChart"></canvas>
+                    </div>
+                </div>
+                <div class="lg:col-span-3 bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-center text-[#073B4C] mb-4">Data Completeness by Interaction Type</h3>
+                     <div class="chart-container">
+                        <canvas id="completenessBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="detailed-completeness" class="mb-12 md:mb-20">
+            <h2 class="text-3xl font-bold text-center text-[#073B4C] mb-10">Detailed Completeness Analysis</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-center text-[#073B4C] mb-4">Completeness by Requirement Status</h3>
+                    <p class="text-center text-gray-600 mb-4 text-sm">Are our critical fields more complete than optional ones? This chart confirms that fields marked 'Always' required have the highest data quality.</p>
+                    <div class="chart-container" style="max-height: 350px;">
+                        <canvas id="completenessByRequiredChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-center text-[#073B4C] mb-4">Completeness by Priority per Interaction</h3>
+                     <p class="text-center text-gray-600 mb-4 text-sm">This view shows if high-priority (P1) fields are being populated correctly within key interactions. Low P1 completeness for an interaction is a red flag.</p>
+                    <div class="chart-container" style="height: 500px; max-height: 600px;">
+                        <canvas id="completenessByPriorityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="recommendations" class="bg-white p-8 rounded-lg shadow-lg">
+            <h2 class="text-3xl font-bold text-center text-[#073B4C] mb-6">Key Takeaways & Next Steps</h2>
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-gray-700">
+                <div class="text-center">
+                    <div class="text-4xl mb-3">🤖</div>
+                    <h3 class="text-xl font-bold mb-2 text-[#118AB2]">Automate & Schedule</h3>
+                    <p>Convert this query into a scheduled run in BigQuery. Continuous, automated monitoring is the best way to catch data quality issues before they impact downstream users.</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl mb-3">📊</div>
+                    <h3 class="text-xl font-bold mb-2 text-[#118AB2]">Visualize the Output</h3>
+                    <p>Connect the final report table to a BI tool like Looker Studio. A dashboard tracking completeness over time will make trends and regressions immediately visible.</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl mb-3">⚙️</div>
+                    <h3 class="text-xl font-bold mb-2 text-[#118AB2]">Parameterize Queries</h3>
+                    <p>To make the audit query even more flexible, convert hardcoded values like the date into parameters that can be easily changed for ad-hoc analysis or backfills.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    <footer class="text-center p-4 mt-8 text-gray-500 text-sm">
+        <p>Data Quality Infographic | Generated June 24, 2025</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const energeticPlayful = {
+                green: '#06D6A0',
+                blue: '#118AB2',
+                yellow: '#FFD166',
+                red: '#FF6B6B',
+                darkBlue: '#073B4C',
+            };
+
+            const wrapLabel = (label, maxWidth) => {
+                if (!label) return [''];
+                const words = label.split(' ');
+                let lines = [];
+                let currentLine = words[0] || '';
+
+                for (let i = 1; i < words.length; i++) {
+                    if ((currentLine + ' ' + words[i]).length > maxWidth) {
+                        lines.push(currentLine);
+                        currentLine = words[i];
+                    } else {
+                        currentLine += ' ' + words[i];
+                    }
+                }
+                lines.push(currentLine);
+                return lines;
+            };
+
+            const tooltipTitleCallback = (tooltipItems) => {
+                const item = tooltipItems[0];
+                if (!item) return '';
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                    return label.join(' ');
+                } else {
+                    return label;
+                }
+            };
+
+            const baseChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: tooltipTitleCallback
+                        }
+                    }
+                }
+            };
+            
+            const createStatusDonutChart = () => {
+                const ctx = document.getElementById('statusDonutChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Field OK', 'Low Completeness', 'Missing Field'],
+                        datasets: [{
+                            label: 'Audit Status',
+                            data: [248, 48, 16],
+                            backgroundColor: [energeticPlayful.green, energeticPlayful.yellow, energeticPlayful.red],
+                            borderColor: '#ffffff',
+                            borderWidth: 2,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: { ...baseChartOptions, cutout: '60%' }
+                });
+            };
+            
+            const createCompletenessBarChart = () => {
+                const ctx = document.getElementById('completenessBarChart').getContext('2d');
+                const rawLabels = ['checkout pageview', 'pageview', 'navigation', 'registration', 'checkout - registration events', 'social share events', 'video events', 'recommended articles', 'opta widgets', 'polls'];
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: rawLabels.map(label => wrapLabel(label, 16)),
+                        datasets: [{
+                            label: 'Completeness %',
+                            data: [99.8, 99.1, 98.5, 95.2, 94.1, 91.3, 89.9, 85.4, 78.1, 65.7],
+                            backgroundColor: energeticPlayful.blue,
+                            borderColor: energeticPlayful.darkBlue,
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        ...baseChartOptions,
+                        indexAxis: 'y',
+                        plugins: { ...baseChartOptions.plugins, legend: { display: false } },
+                        scales: {
+                            x: { beginAtZero: true, max: 100, ticks: { callback: (v) => v + '%' } },
+                            y: { grid: { display: false } }
+                        }
+                    }
+                });
+            };
+
+            const createCompletenessByRequiredChart = () => {
+                const ctx = document.getElementById('completenessByRequiredChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Always', 'Recommended', 'Optional'],
+                        datasets: [{
+                            label: 'Average Completeness %',
+                            data: [99.1, 95.5, 87.5],
+                            backgroundColor: [energeticPlayful.green, energeticPlayful.blue, energeticPlayful.yellow],
+                            borderColor: [energeticPlayful.darkBlue, energeticPlayful.darkBlue, energeticPlayful.darkBlue],
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        ...baseChartOptions,
+                        plugins: { ...baseChartOptions.plugins, legend: { display: false } },
+                        scales: { y: { beginAtZero: true, max: 100, ticks: { callback: (v) => v + '%' } } }
+                    }
+                });
+            };
+
+            const createCompletenessByPriorityChart = () => {
+                const ctx = document.getElementById('completenessByPriorityChart').getContext('2d');
+                const rawLabels = ['checkout pageview', 'pageview', 'navigation', 'registration', 'checkout - registration events', 'social share events', 'video events', 'recommended articles', 'opta widgets', 'polls'];
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: rawLabels.map(label => wrapLabel(label, 20)),
+                        datasets: [
+                            {
+                                label: 'P1 Priority',
+                                data: [99.8, 99.5, 99.0, 96.0, 95.0, 92.0, 90.0, 88.0, 80.0, 75.0],
+                                backgroundColor: energeticPlayful.blue,
+                            },
+                            {
+                                label: 'P2 Priority',
+                                data: [99.0, 98.0, 97.0, 94.0, 93.0, 91.0, 89.0, 85.0, 78.0, 65.0],
+                                backgroundColor: energeticPlayful.yellow,
+                            },
+                             {
+                                label: 'P3 Priority',
+                                data: [98.0, 97.5, 96.0, 93.0, 92.0, 90.0, 88.0, 82.0, 75.0, 60.0],
+                                backgroundColor: energeticPlayful.green,
+                            }
+                        ]
+                    },
+                    options: {
+                        ...baseChartOptions,
+                        indexAxis: 'y',
+                        scales: {
+                            x: { stacked: false, beginAtZero: true, max: 100, ticks: { callback: (v) => v + '%' } },
+                            y: { stacked: false, grid: { display: false } }
+                        }
+                    }
+                });
+            };
+
+            createStatusDonutChart();
+            createCompletenessBarChart();
+            createCompletenessByRequiredChart();
+            createCompletenessByPriorityChart();
+        });
+    </script>
 </body>
 </html>
