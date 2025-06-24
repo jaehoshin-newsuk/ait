@@ -66,8 +66,9 @@
         }
         .code-block .keyword { color: #63b3ed; }
         .code-block .function { color: #faf089; }
-        .code-block .comment { color: #90cdf4; }
+        .code-block .comment { color: #a0aec0; }
         .code-block .string { color: #9ae6b4; }
+        .code-block .table { color: #81e6d9; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -117,31 +118,49 @@
                     <h3 class="text-xl font-bold text-[#073B4C] mb-2">Step 1: Define the Spec with `WITH`</h3>
                     <p class="text-gray-600 mb-4">We start by defining our Common Table Expressions (CTEs). The first CTE, `unified_spec`, creates a temporary, readable table from our Google Sheet spec, making the logic modular and easy to follow. <span class="font-bold text-[#118AB2]">Skill Focus: Modularity with `WITH`.</span></p>
                     <pre class="code-block"><span class="keyword">WITH</span> unified_spec <span class="keyword">AS</span> (
-  <span class="keyword">SELECT</span> ... <span class="keyword">FROM</span> `your-project.your_dataset.unified_spec_gt`
+  <span class="keyword">SELECT</span>
+    interaction_type,
+    field_name,
+    bq_av_raw_clickstream, 
+    is_required,
+    field_priority
+  <span class="keyword">FROM</span>
+    <span class="table">`nuk-data-dev-dw-clickstream.sandbox_jaeho.unified_spec_gt`</span>
+  <span class="keyword">WHERE</span>
+    bq_av_raw_clickstream <span class="keyword">IS NOT NULL</span>
 ),</pre>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-lg">
                     <h3 class="text-xl font-bold text-[#073B4C] mb-2">Step 2: Classify Events with `CASE WHEN`</h3>
                     <p class="text-gray-600 mb-4">Next, we ingest raw data and apply business logic using a `CASE WHEN` statement. This classifies each event into a meaningful `interaction_type`, which is the key to joining it with our spec. <span class="font-bold text-[#06D6A0]">Skill Focus: Conditional Logic with `CASE WHEN`.</span></p>
                      <pre class="code-block">raw_events_with_interaction <span class="keyword">AS</span> (
-  <span class="keyword">SELECT</span> *, 
+  <span class="keyword">SELECT</span> *,
     <span class="keyword">CASE</span>
       <span class="keyword">WHEN</span> eventType = 1 <span class="keyword">AND</span> dimension73 <span class="keyword">IS NOT NULL THEN</span> <span class="string">'polls'</span>
-      <span class="keyword">WHEN</span> eventType = 0 <span class="keyword">THEN</span> <span class="string">'pageview'</span>
-      ...
+      <span class="keyword">WHEN</span> eventType = 1 <span class="keyword">AND</span> REGEXP_CONTAINS(dimension28, <span class="string">r'registration|sun club paywall'</span>) <span class="keyword">THEN</span> <span class="string">'registration'</span>
+      <span class="keyword">WHEN</span> eventType = 0 <span class="keyword">AND</span> publication != <span class="string">'thesunstorecheckout'</span> <span class="keyword">THEN</span> <span class="string">'pageview'</span>
+      <span class="keyword">ELSE</span> <span class="string">'unknown'</span>
     <span class="keyword">END AS</span> interaction_type
-  <span class="keyword">FROM</span> `your-project.clickstream.nuk_pixel`
+  <span class="keyword">FROM</span>
+    <span class="table">`nuk-data-prod-dw-clickstream.av_raw_clickstream.nuk_pixel`</span>
 ),</pre>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-lg">
                     <h3 class="text-xl font-bold text-[#073B4C] mb-2">Step 3: Unpivot Dynamically</h3>
                     <p class="text-gray-600 mb-4">This is the core transformation. We use another `CASE WHEN` statement to unpivot our wide raw data table into a long format. It checks the column name from the spec and dynamically pulls the value from the correct column in the raw data. <span class="font-bold text-[#FFD166]">Skill Focus: Advanced `CASE` for Transformation.</span></p>
-                                         <pre class="code-block">raw_data_unpivoted <span class="keyword">AS</span> (
-  <span class="keyword">SELECT</span> raw.interaction_type, spec.field_name,
+                    <pre class="code-block">raw_data_unpivoted <span class="keyword">AS</span> (
+  <span class="keyword">SELECT</span>
+    raw.interaction_type,
+    spec.field_name,
     <span class="keyword">CASE</span> spec.bq_av_raw_clickstream
+      <span class="comment">-- Standard Fields</span>
       <span class="keyword">WHEN</span> <span class="string">'pageUrl'</span> <span class="keyword">THEN</span> raw.pageUrl
+      <span class="keyword">WHEN</span> <span class="string">'articleId'</span> <span class="keyword">THEN</span> raw.articleId
+      <span class="comment">-- Dimension Fields</span>
       <span class="keyword">WHEN</span> <span class="string">'dimension1'</span> <span class="keyword">THEN</span> raw.dimension1
-      ...
+      <span class="keyword">WHEN</span> <span class="string">'dimension2'</span> <span class="keyword">THEN</span> raw.dimension2
+      <span class="comment">... and 198 more dimensions ...</span>
+      <span class="keyword">ELSE NULL</span>
     <span class="keyword">END AS</span> field_value
   <span class="keyword">FROM</span> raw_events_with_interaction <span class="keyword">AS</span> raw ...
 ),</pre>
@@ -150,13 +169,16 @@
                     <h3 class="text-xl font-bold text-[#073B4C] mb-2">Step 4: Aggregate and Audit with `COALESCE`</h3>
                     <p class="text-gray-600 mb-4">Finally, we aggregate the unpivoted data to get counts and completeness percentages. We `LEFT JOIN` this back to the original spec and use `COALESCE` to turn any `NULL` results (for missing fields) into `0` for a clean report. <span class="font-bold text-[#FF6B6B]">Skill Focus: Clean Reporting with `LEFT JOIN` & `COALESCE`.</span></p>
                     <pre class="code-block"><span class="keyword">SELECT</span>
+  spec.interaction_type,
   spec.field_name,
-  <span class="function">COALESCE</span>(agg.completeness_percentage, 0) <span class="keyword">AS</span> completeness_percentage,
-  <span class="keyword">CASE</span> 
+  <span class="function">ROUND</span>(<span class="function">COALESCE</span>(agg.completeness_percentage, 0), 2) <span class="keyword">AS</span> completeness_percentage,
+  <span class="keyword">CASE</span>
     <span class="keyword">WHEN</span> agg.field_name <span class="keyword">IS NULL THEN</span> <span class="string">'Missing Field'</span>
-    ...
+    <span class="keyword">WHEN</span> <span class="function">COALESCE</span>(agg.completeness_percentage, 0) < 95 <span class="keyword">THEN</span> <span class="string">'Low Completeness'</span>
+    <span class="keyword">ELSE</span> <span class="string">'Field OK'</span>
   <span class="keyword">END AS</span> audit_status
-<span class="keyword">FROM</span> unified_spec <span class="keyword">AS</span> spec <span class="keyword">LEFT JOIN</span> pre_aggregated_data <span class="keyword">AS</span> agg ...</pre>
+<span class="keyword">FROM</span> unified_spec <span class="keyword">AS</span> spec
+<span class="keyword">LEFT JOIN</span> pre_aggregated_data <span class="keyword">AS</span> agg ...</pre>
                 </div>
             </div>
         </section>
@@ -221,15 +243,15 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 text-center">
                 <div class="kpi-card p-6 rounded-lg shadow-md border-b-4 border-[#118AB2]">
                     <p class="text-lg font-medium text-gray-500">Total Fields Audited</p>
-                    <p class="text-5xl font-extrabold text-[#073B4C]" id="total-fields">312</p>
+                    <p class="text-5xl font-extrabold text-[#073B4C]" id="total-fields">570</p>
                 </div>
                 <div class="kpi-card p-6 rounded-lg shadow-md border-b-4 border-[#FF6B6B]">
                     <p class="text-lg font-medium text-gray-500">Fields with Issues</p>
-                    <p class="text-5xl font-extrabold text-[#FF6B6B]" id="fields-with-issues">64</p>
+                    <p class="text-5xl font-extrabold text-[#FF6B6B]" id="fields-with-issues">334</p>
                 </div>
                 <div class="kpi-card p-6 rounded-lg shadow-md border-b-4 border-[#06D6A0]">
                     <p class="text-lg font-medium text-gray-500">Overall Data Completeness</p>
-                    <p class="text-5xl font-extrabold text-[#06D6A0]" id="overall-completeness">92.7%</p>
+                    <p class="text-5xl font-extrabold text-[#06D6A0]" id="overall-completeness">56.3%</p>
                 </div>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
@@ -253,7 +275,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="bg-white p-6 rounded-lg shadow-lg">
                     <h3 class="text-xl font-bold text-center text-[#073B4C] mb-4">Completeness by Requirement Status</h3>
-                    <p class="text-center text-gray-600 mb-4 text-sm">Are our critical fields more complete than optional ones? This chart confirms that fields marked 'Always' required have the highest data quality.</p>
+                    <p class="text-center text-gray-600 mb-4 text-sm">Are our critical fields more complete than optional ones? This chart breaks down completeness by the 'is_required' field from the spec.</p>
                     <div class="chart-container" style="max-height: 350px;">
                         <canvas id="completenessByRequiredChart"></canvas>
                     </div>
@@ -303,6 +325,7 @@
                 yellow: '#FFD166',
                 red: '#FF6B6B',
                 darkBlue: '#073B4C',
+                purple: '#7209B7'
             };
 
             const wrapLabel = (label, maxWidth) => {
@@ -348,140 +371,34 @@
                     }
                 }
             };
-
-            // Data from the provided CSV file
-            const auditData = [
-                {"interaction_type":"checkout - registration events","field_name":"customer.profile.email","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"dimension130","total_events":"264","null_count":"12","completeness_percentage":"95.45","audit_status":"Field OK"},
-                {"interaction_type":"checkout - registration events","field_name":"customer.profile.firstName","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"dimension131","total_events":"264","null_count":"12","completeness_percentage":"95.45","audit_status":"Field OK"},
-                {"interaction_type":"checkout - registration events","field_name":"customer.profile.lastName","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"dimension132","total_events":"264","null_count":"12","completeness_percentage":"95.45","audit_status":"Field OK"},
-                {"interaction_type":"checkout - registration events","field_name":"event_name","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"eventAction","total_events":"264","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"checkout - registration events","field_name":"page.pageInfo.pageName","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"pageName","total_events":"264","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"checkout - registration events","field_name":"page.pageInfo.publication","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"publication","total_events":"264","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"checkout pageview","field_name":"event_name","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"pageName","total_events":"348","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"checkout pageview","field_name":"page.pageInfo.pageName","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"pageName","total_events":"348","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"checkout pageview","field_name":"page.pageInfo.publication","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"publication","total_events":"348","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"navigation","field_name":"event_name","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"eventAction","total_events":"13847","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"navigation","field_name":"page.pageInfo.articleId","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"articleId","total_events":"13847","null_count":"13847","completeness_percentage":"0","audit_status":"Low Completeness"},
-                {"interaction_type":"navigation","field_name":"page.pageInfo.pageName","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"pageName","total_events":"13847","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"navigation","field_name":"page.pageInfo.publication","is_required":"Always","priority":"P1","bq_av_raw_raw_clickstream":"publication","total_events":"13847","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"navigation","field_name":"component.componentInfo.componentId","is_required":"Recommended","priority":"P2","bq_av_raw_clickstream":"dimension28","total_events":"13847","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"opta widgets","field_name":"event_name","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"eventAction","total_events":"56","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"pageview","field_name":"event_name","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"pageName","total_events":"87015","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"pageview","field_name":"page.pageInfo.articleId","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"articleId","total_events":"87015","null_count":"87015","completeness_percentage":"0","audit_status":"Low Completeness"},
-                {"interaction_type":"pageview","field_name":"page.pageInfo.pageName","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"pageName","total_events":"87015","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"pageview","field_name":"page.pageInfo.publication","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"publication","total_events":"87015","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"polls","field_name":"component.componentInfo.componentId","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"dimension73","total_events":"151","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"polls","field_name":"event_name","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"eventAction","total_events":"151","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"recommended articles","field_name":"component.componentInfo.componentId","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"dimension83","total_events":"1865","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"recommended articles","field_name":"event_name","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"eventAction","total_events":"1865","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"registration","field_name":"customer.profile.email","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"dimension130","total_events":"18","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"registration","field_name":"customer.profile.firstName","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"dimension131","total_events":"18","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"registration","field_name":"customer.profile.lastName","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"dimension132","total_events":"18","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"registration","field_name":"event_name","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"eventAction","total_events":"18","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"social share events","field_name":"event_name","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"eventAction","total_events":"17","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"social share events","field_name":"component.componentInfo.componentId","is_required":"Recommended","priority":"P2","bq_av_raw_clickstream":"dimension28","total_events":"17","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"video events","field_name":"event_name","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"eventAction","total_events":"8042","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"video events","field_name":"video.videoInfo.videoName","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"dimension18","total_events":"8042","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"},
-                {"interaction_type":"video events","field_name":"video.videoInfo.videoPlayer","is_required":"Always","priority":"P1","bq_av_raw_clickstream":"dimension21","total_events":"8042","null_count":"0","completeness_percentage":"100","audit_status":"Field OK"}
-            ];
-
-            // --- Data Processing ---
             
-            // KPIs
-            const totalFields = auditData.length;
-            const fieldsWithIssues = auditData.filter(d => d.audit_status !== 'Field OK').length;
-            const sumOfCompleteness = auditData.reduce((acc, curr) => acc + parseFloat(curr.completeness_percentage), 0);
-            const overallCompleteness = (sumOfCompleteness / totalFields).toFixed(1);
-
-            document.getElementById('total-fields').textContent = totalFields;
-            document.getElementById('fields-with-issues').textContent = fieldsWithIssues;
-            document.getElementById('overall-completeness').textContent = `${overallCompleteness}%`;
-
-            // Audit Status Breakdown
-            const statusCounts = auditData.reduce((acc, curr) => {
-                acc[curr.audit_status] = (acc[curr.audit_status] || 0) + 1;
-                return acc;
-            }, {});
-
-            const statusData = {
-                labels: Object.keys(statusCounts),
-                datasets: [{
-                    data: Object.values(statusCounts),
-                }]
+            const kpiData = {"total_fields": 570, "fields_with_issues": 334, "overall_completeness": "56.3%"};
+            const statusCounts = {"Low Completeness": 334, "Field OK": 236};
+            const completenessByInteraction = {"navigation":40.78,"pageview":46.86,"opta widgets":47.06,"polls":49.44,"social share events":57.88,"registration":58.94,"recommended articles":65.81,"checkout pageview":66.69,"video events":67.01,"checkout - registration events":81.85};
+            const completenessByRequired = {"Always":92.04,"Conditional":67.23,"Optional":34.59};
+            const priorityData = {"labels": ["checkout - registration events","checkout pageview","navigation","opta widgets","pageview","polls","recommended articles","registration","social share events","video events"],
+                "datasets": {
+                    "P0": [98.64,98.46,87.51,90.45,88.95,100.0,91.69,91.92,92.35,92.33],
+                    "P1": [71.76,50.83,62.1,71.63,61.49,85.34,78.24,69.49,69.72,75.83],
+                    "P2": [73.23,33.09,35.8,50.31,43.17,28.51,65.61,58.24,46.18,67.37],
+                    "P3": [59.48,0.0,20.04,20.91,22.04,20.46,46.12,31.77,34.77,51.49]
+                }
             };
 
-            // Completeness by Interaction Type
-            const completenessByInteraction = auditData.reduce((acc, curr) => {
-                if (!acc[curr.interaction_type]) {
-                    acc[curr.interaction_type] = { sum: 0, count: 0 };
-                }
-                acc[curr.interaction_type].sum += parseFloat(curr.completeness_percentage);
-                acc[curr.interaction_type].count += 1;
-                return acc;
-            }, {});
-
-            const interactionLabels = Object.keys(completenessByInteraction);
-            const interactionData = interactionLabels.map(label => {
-                const item = completenessByInteraction[label];
-                return (item.sum / item.count).toFixed(2);
-            });
-            
-            // Completeness by Requirement
-            const completenessByRequired = auditData.reduce((acc, curr) => {
-                const requirement = curr.is_required || 'Optional'; // Default to Optional if empty
-                 if (!acc[requirement]) {
-                    acc[requirement] = { sum: 0, count: 0 };
-                }
-                acc[requirement].sum += parseFloat(curr.completeness_percentage);
-                acc[requirement].count += 1;
-                return acc;
-            }, {});
-
-            const requiredLabels = ['Always', 'Recommended', 'Optional'].filter(d => completenessByRequired[d]);
-            const requiredData = requiredLabels.map(label => {
-                const item = completenessByRequired[label];
-                return (item.sum / item.count).toFixed(2);
-            });
-
-             // Completeness by Priority per Interaction
-            const priorityByInteraction = {};
-            auditData.forEach(d => {
-                if (!priorityByInteraction[d.interaction_type]) {
-                    priorityByInteraction[d.interaction_type] = { P1: {sum: 0, count: 0}, P2: {sum: 0, count: 0}, P3: {sum: 0, count: 0} };
-                }
-                const priority = d.priority || 'P3';
-                if(priorityByInteraction[d.interaction_type][priority]){
-                    priorityByInteraction[d.interaction_type][priority].sum += parseFloat(d.completeness_percentage);
-                    priorityByInteraction[d.interaction_type][priority].count += 1;
-                }
-            });
-            
-            const priorityInteractionLabels = Object.keys(priorityByInteraction);
-            const p1Data = priorityInteractionLabels.map(label => {
-                const item = priorityByInteraction[label].P1;
-                return item.count > 0 ? (item.sum / item.count).toFixed(2) : 0;
-            });
-            const p2Data = priorityInteractionLabels.map(label => {
-                const item = priorityByInteraction[label].P2;
-                return item.count > 0 ? (item.sum / item.count).toFixed(2) : 0;
-            });
-             const p3Data = priorityInteractionLabels.map(label => {
-                const item = priorityByInteraction[label].P3;
-                return item.count > 0 ? (item.sum / item.count).toFixed(2) : 0;
-            });
-
-            // --- Chart Creation ---
+            document.getElementById('total-fields').textContent = kpiData.total_fields;
+            document.getElementById('fields-with-issues').textContent = kpiData.fields_with_issues;
+            document.getElementById('overall-completeness').textContent = kpiData.overall_completeness;
 
             const createStatusDonutChart = () => {
                 const ctx = document.getElementById('statusDonutChart').getContext('2d');
                 new Chart(ctx, {
                     type: 'doughnut',
                     data: {
-                        labels: statusData.labels,
+                        labels: Object.keys(statusCounts),
                         datasets: [{
                             label: 'Audit Status',
-                            data: statusData.datasets[0].data,
-                            backgroundColor: [energeticPlayful.green, energeticPlayful.red, energeticPlayful.yellow],
+                            data: Object.values(statusCounts),
+                            backgroundColor: [energeticPlayful.yellow, energeticPlayful.green],
                             borderColor: '#ffffff',
                             borderWidth: 2,
                             hoverOffset: 4
@@ -496,10 +413,10 @@
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: interactionLabels.map(label => wrapLabel(label, 16)),
+                        labels: Object.keys(completenessByInteraction).map(label => wrapLabel(label, 16)),
                         datasets: [{
                             label: 'Completeness %',
-                            data: interactionData,
+                            data: Object.values(completenessByInteraction),
                             backgroundColor: energeticPlayful.blue,
                             borderColor: energeticPlayful.darkBlue,
                             borderWidth: 1,
@@ -523,10 +440,10 @@
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: requiredLabels,
+                        labels: Object.keys(completenessByRequired),
                         datasets: [{
                             label: 'Average Completeness %',
-                            data: requiredData,
+                            data: Object.values(completenessByRequired),
                             backgroundColor: [energeticPlayful.green, energeticPlayful.blue, energeticPlayful.yellow],
                             borderColor: [energeticPlayful.darkBlue, energeticPlayful.darkBlue, energeticPlayful.darkBlue],
                             borderWidth: 1,
@@ -546,23 +463,12 @@
                 new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: priorityInteractionLabels.map(label => wrapLabel(label, 20)),
+                        labels: priorityData.labels.map(label => wrapLabel(label, 20)),
                         datasets: [
-                            {
-                                label: 'P1 Priority',
-                                data: p1Data,
-                                backgroundColor: energeticPlayful.blue,
-                            },
-                            {
-                                label: 'P2 Priority',
-                                data: p2Data,
-                                backgroundColor: energeticPlayful.yellow,
-                            },
-                             {
-                                label: 'P3 Priority',
-                                data: p3Data,
-                                backgroundColor: energeticPlayful.green,
-                            }
+                            { label: 'P0 Priority', data: priorityData.datasets.P0, backgroundColor: energeticPlayful.purple },
+                            { label: 'P1 Priority', data: priorityData.datasets.P1, backgroundColor: energeticPlayful.blue },
+                            { label: 'P2 Priority', data: priorityData.datasets.P2, backgroundColor: energeticPlayful.yellow },
+                            { label: 'P3 Priority', data: priorityData.datasets.P3, backgroundColor: energeticPlayful.green }
                         ]
                     },
                     options: {
