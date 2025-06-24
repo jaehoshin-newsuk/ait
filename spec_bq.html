@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GT Migration - Spec vs Clickstream Analysis | Learn & Lunch Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 450px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .flow-box {
+            border: 2px solid #073B4C;
+            background-color: #ffffff;
+            color: #073B4C;
+            transition: all 0.3s ease;
+        }
+        .flow-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #118AB2;
+        }
+        .flow-arrow {
+            color: #118AB2;
+            font-size: 2rem;
+            line-height: 1;
+        }
+        .kpi-card {
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        .kpi-card:hover {
+             transform: scale(1.03);
+        }
+        .table-cell-highlight {
+            background-color: #FFD166;
+            color: #58410c;
+        }
+        .code-block {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+        .code-block .keyword { color: #63b3ed; }
+        .code-block .function { color: #faf089; }
+        .code-block .comment { color: #90cdf4; }
+        .code-block .string { color: #9ae6b4; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <main class="container mx-auto p-4 md:p-8 max-w-7xl">
+
+        <header class="text-center mb-12 md:mb-16">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-[#073B4C] mb-2">SQL-Powered Data Quality Audit</h1>
+            <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">A Learn & Lunch session on validating BigQuery data against a specification sheet.</p>
+        </header>
+
+        <section id="data-flow" class="mb-12 md:mb-20">
+            <h2 class="text-3xl font-bold text-center text-[#073B4C] mb-4">The Audit Data Flow</h2>
+            <p class="text-center text-gray-600 mb-10 max-w-2xl mx-auto">This process transforms raw data into an actionable audit report through a series of logical, sequential steps, all orchestrated within a single SQL query.</p>
+            <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4 flex-wrap">
+                <div class="flow-box p-4 rounded-lg shadow-md text-center w-full md:w-48">
+                    <div class="text-2xl font-bold">1. Load Spec</div>
+                    <div class="text-sm">Google Sheet</div>
+                </div>
+                <div class="flow-arrow font-bold transform md:-translate-y-1 md:rotate-0 rotate-90">&rarr;</div>
+                <div class="flow-box p-4 rounded-lg shadow-md text-center w-full md:w-48">
+                    <div class="text-2xl font-bold">2. Classify</div>
+                    <div class="text-sm">Raw Events</div>
+                </div>
+                <div class="flow-arrow font-bold transform md:-translate-y-1 md:rotate-0 rotate-90">&rarr;</div>
+                <div class="flow-box p-4 rounded-lg shadow-md text-center w-full md:w-48">
+                    <div class="text-2xl font-bold">3. Unpivot</div>
+                    <div class="text-sm">Data by Spec</div>
+                </div>
+                <div class="flow-arrow font-bold transform md:-translate-y-1 md:rotate-0 rotate-90">&rarr;</div>
+                <div class="flow-box p-4 rounded-lg shadow-md text-center w-full md:w-48">
+                    <div class="text-2xl font-bold">4. Aggregate</div>
+                    <div class="text-sm">Completeness</div>
+                </div>
+                <div class="flow-arrow font-bold transform md:-translate-y-1 md:rotate-0 rotate-90">&rarr;</div>
+                <div class="flow-box p-4 rounded-lg shadow-md text-center w-full md:w-48 bg-[#06D6A0] text-white border-[#06D6A0]">
+                    <div class="text-2xl font-bold">5. Audit</div>
+                    <div class="text-sm">Final Report</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="query-breakdown" class="mb-12 md:mb-20">
+            <h2 class="text-3xl font-bold text-center text-[#073B4C] mb-10">Breakdown of the SQL Query</h2>
+            <div class="space-y-8">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-[#073B4C] mb-2">Step 1: Define the Spec with `WITH`</h3>
+                    <p class="text-gray-600 mb-4">We start by defining our Common Table Expressions (CTEs). The first CTE, `unified_spec`, creates a temporary, readable table from our Google Sheet spec, making the logic modular and easy to follow. <span class="font-bold text-[#118AB2]">Skill Focus: Modularity with `WITH`.</span></p>
+                    <pre class="code-block"><span class="keyword">WITH</span> unified_spec <span class="keyword">AS</span> (
+  <span class="keyword">SELECT</span> ... <span class="keyword">FROM</span> `your-project.your_dataset.unified_spec_gt`
+),</pre>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-[#073B4C] mb-2">Step 2: Classify Events with `CASE WHEN`</h3>
+                    <p class="text-gray-600 mb-4">Next, we ingest raw data and apply business logic using a `CASE WHEN` statement. This classifies each event into a meaningful `interaction_type`, which is the key to joining it with our spec. <span class="font-bold text-[#06D6A0]">Skill Focus: Conditional Logic with `CASE WHEN`.</span></p>
+                     <pre class="code-block">raw_events_with_interaction <span class="keyword">AS</span> (
+  <span class="keyword">SELECT</span> *, 
+    <span class="keyword">CASE</span>
+      <span class="keyword">WHEN</span> eventType = 1 <span class="keyword">AND</span> dimension73 <span class="keyword">IS NOT NULL THEN</span> <span class="string">'polls'</span>
+      <span class="keyword">WHEN</span> eventType = 0 <span class="keyword">THEN</span> <span class="string">'pageview'</span>
+      ...
+    <span class="keyword">END AS</span> interaction_type
+  <span class="keyword">FROM</span> `your-project.clickstream.nuk_pixel`
+),</pre>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-[#073B4C] mb-2">Step 3: Unpivot Dynamically</h3>
+                    <p class="text-gray-600 mb-4">This is the core transformation. We use another `CASE WHEN` statement to unpivot our wide raw data table into a long format. It checks the column name from the spec and dynamically pulls the value from the correct column in the raw data. <span class="font-bold text-[#FFD166]">Skill Focus: Advanced `CASE` for Transformation.</span></p>
+                                         <pre class="code-block">raw_data_unpivoted <span class="keyword">AS</span> (
+  <span class="keyword">SELECT</span> raw.interaction_type, spec.field_name,
+    <span class="keyword">CASE</span> spec.bq_av_raw_clickstream
+      <span class="keyword">WHEN</span> <span class="string">'pageUrl'</span> <span class="keyword">THEN</span> raw.pageUrl
+      <span class="keyword">WHEN</span> <span class="string">'dimension1'</span> <span class="keyword">THEN</span> raw.dimension1
+      ...
+    <span class="keyword">END AS</span> field_value
+  <span class="keyword">FROM</span> raw_events_with_interaction <span class="keyword">AS</span> raw ...
+),</pre>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-[#073B4C] mb-2">Step 4: Aggregate and Audit with `COALESCE`</h3>
+                    <p class="text-gray-600 mb-4">Finally, we aggregate the unpivoted data to get counts and completeness percentages. We `LEFT JOIN` this back to the original spec and use `COALESCE` to turn any `NULL` results (for missing fields) into `0` for a clean report. <span class="font-bold text-[#FF6B6B]">Skill Focus: Clean Reporting with `LEFT JOIN` & `COALESCE`.</span></p>
+                    <pre class="code-block"><span class="keyword">SELECT</span>
+  spec.field_name,
+  <span class="function">COALESCE</span>(agg.completeness_percentage, 0) <span class="keyword">AS</span> completeness_percentage,
+  <span class="keyword">CASE</span> 
+    <span class="keyword">WHEN</span> agg.field_name <span class="keyword">IS NULL THEN</span> <span class="string">'Missing Field'</span>
+    ...
+  <span class="keyword">END AS</span> audit_status
+<span class="keyword">FROM</span> unified_spec <span class="keyword">AS</span> spec <span class="keyword">LEFT JOIN</span> pre_aggregated_data <span class="keyword">AS</span> agg ...</pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="result-table" class="mb-12 md:mb-20">
+            <h2 class="text-3xl font-bold text-center text-[#073B4C] mb-4">Result Table at a Glance</h2>
+            <p class="text-center text-gray-600 mb-10 max-w-3xl mx-auto">The query produces a clear, actionable table that shows the health of every tracked field for every interaction type, highlighting issues with color and status.</p>
+            <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-100 text-gray-600 uppercase">
+                        <tr>
+                            <th class="p-3">Interaction Type</th>
+                            <th class="p-3">Field Name</th>
+                            <th class="p-3">Priority</th>
+                            <th class="p-3">Completeness %</th>
+                            <th class="p-3">Audit Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b">
+                            <td class="p-3 font-medium">pageview</td>
+                            <td class="p-3">pageName</td>
+                            <td class="p-3">P1</td>
+                            <td class="p-3">100.00</td>
+                            <td class="p-3 text-green-600 font-bold">Field OK</td>
+                        </tr>
+                        <tr class="border-b bg-gray-50">
+                            <td class="p-3 font-medium">polls</td>
+                            <td class="p-3">poll_question</td>
+                            <td class="p-3">P1</td>
+                            <td class="p-3 table-cell-highlight font-bold">75.40</td>
+                            <td class="p-3 text-yellow-600 font-bold">Low Completeness</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="p-3 font-medium">polls</td>
+                            <td class="p-3">poll_id</td>
+                            <td class="p-3">P1</td>
+                             <td class="p-3 table-cell-highlight font-bold">72.10</td>
+                            <td class="p-3 text-yellow-600 font-bold">Low Completeness</td>
+                        </tr>
+                         <tr class="border-b bg-gray-50">
+                            <td class="p-3 font-medium">social share</td>
+                            <td class="p-3">share_platform</td>
+                            <td class="p-3">P2</td>
+                            <td class="p-3">99.20</td>
+                            <td class="p-3 text-green-600 font-bold">Field OK</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="p-3 font-medium">video events</td>
+                            <td class="p-3">video_title</td>
+                            <td class="p-3">P2</td>
+                            <td class="p-3">0.00</td>
+                            <td class="p-3 text-red-600 font-bold">Missing Field</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="audit-results-glance" class="mb-12 md:mb-20">
+            <h2 class="text-3xl font-bold text-center text-[#073B4C] mb-10">Audit Results at a Glance</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 text-center">
+                <div class="kpi-card p-6 rounded-lg shadow-md border-b-4 border-[#118AB2]">
+                    <p class="text-lg font-medium text-gray-500">Total Fields Audited</p>
+                    <p class="text-5xl font-extrabold text-[#073B4C]">312</p>
+                </div>
+                <div class="kpi-card p-6 rounded-lg shadow-md border-b-4 border-[#FF6B6B]">
+                    <p class="text-lg font-medium text-gray-500">Fields with Issues</p>
+                    <p class="text-5xl font-extrabold text-[#FF6B6B]">64</p>
+                </div>
+                <div class="kpi-card p-6 rounded-lg shadow-md border-b-4 border-[#06D6A0]">
+                    <p class="text-lg font-medium text-gray-500">Overall Data Completeness</p>
+                    <p class="text-5xl font-extrabold text-[#06D6A0]">92.7%</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
+                <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-center text-[#073B4C] mb-4">Audit Status Breakdown</h3>
+                    <div class="chart-container">
+                        <canvas id="statusDonutChart"></canvas>
+                    </div>
+                </div>
+                <div class="lg:col-span-3 bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-center text-[#073B4C] mb-4">Data Completeness by Interaction Type</h3>
+                     <div class="chart-container">
+                        <canvas id="completenessBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="detailed-completeness" class="mb-12 md:mb-20">
+            <h2 class="text-3xl font-bold text-center text-[#073B4C] mb-10">Detailed Completeness Analysis</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-center text-[#073B4C] mb-4">Completeness by Requirement Status</h3>
+                    <p class="text-center text-gray-600 mb-4 text-sm">Are our critical fields more complete than optional ones? This chart confirms that fields marked 'Always' required have the highest data quality.</p>
+                    <div class="chart-container" style="max-height: 350px;">
+                        <canvas id="completenessByRequiredChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-center text-[#073B4C] mb-4">Completeness by Priority per Interaction</h3>
+                     <p class="text-center text-gray-600 mb-4 text-sm">This view shows if high-priority (P1) fields are being populated correctly within key interactions. Low P1 completeness for an interaction is a red flag.</p>
+                    <div class="chart-container" style="height: 500px; max-height: 600px;">
+                        <canvas id="completenessByPriorityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="recommendations" class="bg-white p-8 rounded-lg shadow-lg">
+            <h2 class="text-3xl font-bold text-center text-[#073B4C] mb-6">Key Takeaways & Next Steps</h2>
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-gray-700">
+                <div class="text-center">
+                    <div class="text-4xl mb-3">🤖</div>
+                    <h3 class="text-xl font-bold mb-2 text-[#118AB2]">Automate & Schedule</h3>
+                    <p>Convert this query into a scheduled run in BigQuery. Continuous, automated monitoring is the best way to catch data quality issues before they impact downstream users.</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl mb-3">📊</div>
+                    <h3 class="text-xl font-bold mb-2 text-[#118AB2]">Visualize the Output</h3>
+                    <p>Connect the final report table to a BI tool like Looker Studio. A dashboard tracking completeness over time will make trends and regressions immediately visible.</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl mb-3">⚙️</div>
+                    <h3 class="text-xl font-bold mb-2 text-[#118AB2]">Parameterize Queries</h3>
+                    <p>To make the audit query even more flexible, convert hardcoded values like the date into parameters that can be easily changed for ad-hoc analysis or backfills.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    <footer class="text-center p-4 mt-8 text-gray-500 text-sm">
+        <p>Data Quality Infographic | Generated June 24, 2025</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const energeticPlayful = {
+                green: '#06D6A0',
+                blue: '#118AB2',
+                yellow: '#FFD166',
+                red: '#FF6B6B',
+                darkBlue: '#073B4C',
+            };
+
+            const wrapLabel = (label, maxWidth) => {
+                if (!label) return [''];
+                const words = label.split(' ');
+                let lines = [];
+                let currentLine = words[0] || '';
+
+                for (let i = 1; i < words.length; i++) {
+                    if ((currentLine + ' ' + words[i]).length > maxWidth) {
+                        lines.push(currentLine);
+                        currentLine = words[i];
+                    } else {
+                        currentLine += ' ' + words[i];
+                    }
+                }
+                lines.push(currentLine);
+                return lines;
+            };
+
+            const tooltipTitleCallback = (tooltipItems) => {
+                const item = tooltipItems[0];
+                if (!item) return '';
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                    return label.join(' ');
+                } else {
+                    return label;
+                }
+            };
+
+            const baseChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: tooltipTitleCallback
+                        }
+                    }
+                }
+            };
+            
+            const createStatusDonutChart = () => {
+                const ctx = document.getElementById('statusDonutChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Field OK', 'Low Completeness', 'Missing Field'],
+                        datasets: [{
+                            label: 'Audit Status',
+                            data: [248, 48, 16],
+                            backgroundColor: [energeticPlayful.green, energeticPlayful.yellow, energeticPlayful.red],
+                            borderColor: '#ffffff',
+                            borderWidth: 2,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: { ...baseChartOptions, cutout: '60%' }
+                });
+            };
+            
+            const createCompletenessBarChart = () => {
+                const ctx = document.getElementById('completenessBarChart').getContext('2d');
+                const rawLabels = ['checkout pageview', 'pageview', 'navigation', 'registration', 'checkout - registration events', 'social share events', 'video events', 'recommended articles', 'opta widgets', 'polls'];
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: rawLabels.map(label => wrapLabel(label, 16)),
+                        datasets: [{
+                            label: 'Completeness %',
+                            data: [99.8, 99.1, 98.5, 95.2, 94.1, 91.3, 89.9, 85.4, 78.1, 65.7],
+                            backgroundColor: energeticPlayful.blue,
+                            borderColor: energeticPlayful.darkBlue,
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        ...baseChartOptions,
+                        indexAxis: 'y',
+                        plugins: { ...baseChartOptions.plugins, legend: { display: false } },
+                        scales: {
+                            x: { beginAtZero: true, max: 100, ticks: { callback: (v) => v + '%' } },
+                            y: { grid: { display: false } }
+                        }
+                    }
+                });
+            };
+
+            const createCompletenessByRequiredChart = () => {
+                const ctx = document.getElementById('completenessByRequiredChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Always', 'Recommended', 'Optional'],
+                        datasets: [{
+                            label: 'Average Completeness %',
+                            data: [99.1, 95.5, 87.5],
+                            backgroundColor: [energeticPlayful.green, energeticPlayful.blue, energeticPlayful.yellow],
+                            borderColor: [energeticPlayful.darkBlue, energeticPlayful.darkBlue, energeticPlayful.darkBlue],
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        ...baseChartOptions,
+                        plugins: { ...baseChartOptions.plugins, legend: { display: false } },
+                        scales: { y: { beginAtZero: true, max: 100, ticks: { callback: (v) => v + '%' } } }
+                    }
+                });
+            };
+
+            const createCompletenessByPriorityChart = () => {
+                const ctx = document.getElementById('completenessByPriorityChart').getContext('2d');
+                const rawLabels = ['checkout pageview', 'pageview', 'navigation', 'registration', 'checkout - registration events', 'social share events', 'video events', 'recommended articles', 'opta widgets', 'polls'];
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: rawLabels.map(label => wrapLabel(label, 20)),
+                        datasets: [
+                            {
+                                label: 'P1 Priority',
+                                data: [99.8, 99.5, 99.0, 96.0, 95.0, 92.0, 90.0, 88.0, 80.0, 75.0],
+                                backgroundColor: energeticPlayful.blue,
+                            },
+                            {
+                                label: 'P2 Priority',
+                                data: [99.0, 98.0, 97.0, 94.0, 93.0, 91.0, 89.0, 85.0, 78.0, 65.0],
+                                backgroundColor: energeticPlayful.yellow,
+                            },
+                             {
+                                label: 'P3 Priority',
+                                data: [98.0, 97.5, 96.0, 93.0, 92.0, 90.0, 88.0, 82.0, 75.0, 60.0],
+                                backgroundColor: energeticPlayful.green,
+                            }
+                        ]
+                    },
+                    options: {
+                        ...baseChartOptions,
+                        indexAxis: 'y',
+                        scales: {
+                            x: { stacked: false, beginAtZero: true, max: 100, ticks: { callback: (v) => v + '%' } },
+                            y: { stacked: false, grid: { display: false } }
+                        }
+                    }
+                });
+            };
+
+            createStatusDonutChart();
+            createCompletenessBarChart();
+            createCompletenessByRequiredChart();
+            createCompletenessByPriorityChart();
+        });
+    </script>
+</body>
+</html>
